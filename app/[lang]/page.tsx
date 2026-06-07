@@ -1,5 +1,13 @@
+import type { Metadata } from 'next';
 import Blogs from "../components/Blogs";
 import { getDictionary } from "@/dictionaries";
+
+export async function generateMetadata(props: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await props.params;
+  return {
+    title: lang === 'ar' ? 'الرئيسية' : 'Home',
+  };
+}
 
 async function getBlogs(page: number, search: string, tag: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;

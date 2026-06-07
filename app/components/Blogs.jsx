@@ -192,21 +192,14 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSe
     });
   }, { scope: container, dependencies: [blogs] });
 
-  if (!blogs || blogs.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64 text-muted-foreground font-light">
-        <p>{dict?.empty || 'No articles'}</p>
-      </div>
-    );
-  }
-
   const isFirstPage = currentPage === 1;
   const hasFilters = Boolean(currentSearch || currentTag);
   const showHero = isFirstPage && !hasFilters;
   
-  const heroBlog = showHero && blogs.length > 0 ? blogs[0] : null;
-  const featuredGrid = showHero && blogs.length > 1 ? blogs.slice(1, 5) : [];
-  const standardBlogs = showHero ? blogs.slice(5) : blogs;
+  const hasBlogs = blogs && blogs.length > 0;
+  const heroBlog = showHero && hasBlogs ? blogs[0] : null;
+  const featuredGrid = showHero && blogs?.length > 1 ? blogs.slice(1, 5) : [];
+  const standardBlogs = showHero && hasBlogs ? blogs.slice(5) : (blogs || []);
 
   return (
     <div ref={container} className="relative z-10 flex flex-col gap-12">
@@ -289,6 +282,20 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSe
           {standardBlogs.map((blog) => (
              <BlogCard key={blog._id} blog={blog} dict={dict} lang={lang} />
           ))}
+        </div>
+      )}
+
+      {!hasBlogs && (
+        <div className="flex flex-col justify-center items-center h-64 text-muted-foreground font-light bg-surface/30 rounded-3xl border border-white/5 backdrop-blur-sm">
+           <svg className="w-12 h-12 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg>
+          <p className="text-lg mb-4">{dict?.empty || (lang === 'ar' ? 'لا توجد مقالات' : 'No articles found')}</p>
+          {hasFilters && (
+            <button onClick={clearFilters} className="px-6 py-2.5 rounded-full bg-brand text-white font-medium hover:bg-brand-light transition-colors shadow-lg border border-brand/50">
+              {lang === 'ar' ? "العودة وتصفير البحث" : "Clear Filters & Go Back"}
+            </button>
+          )}
         </div>
       )}
 

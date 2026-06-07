@@ -1,8 +1,29 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from 'next';
 import { getDictionary } from "@/dictionaries";
 import ShareButton from "@/app/components/ShareButton";
+
+export async function generateMetadata(props: { params: Promise<{ id: string; lang: string }> }): Promise<Metadata> {
+  const { id, lang } = await props.params;
+  const blog = await getBlog(id);
+  if (!blog) {
+    return { title: lang === 'ar' ? 'غير موجود' : 'Not Found' };
+  }
+  const title = lang === 'en' && blog.titleEn ? blog.titleEn : blog.title;
+  const desc = lang === 'en' && blog.descriptionEn ? blog.descriptionEn : blog.description;
+  
+  return {
+    title: title,
+    description: desc,
+    openGraph: {
+      title,
+      description: desc,
+      images: blog.image ? [blog.image.startsWith('http') || blog.image.startsWith('/') ? blog.image : `/${blog.image}`] : [],
+    }
+  };
+}
 
 // جلب بيانات مقال واحد
 async function getBlog(id: string) {

@@ -15,7 +15,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Blog Site",
+  title: {
+    template: '%s | Dego Blogs',
+    default: 'Dego Blogs',
+  },
   description: "My personal blog site",
 };
 
