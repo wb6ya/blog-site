@@ -103,7 +103,7 @@ export default async function BlogPage(props: {
             <div className="flex items-center gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-glass-border w-full justify-center">
                {/* Author */}
                <div className="w-10 h-10 rounded-full bg-black/40 border border-white/10 overflow-hidden relative shrink-0">
-                 <Image src={blog.author?.avatar || "/images/logo.png"} alt="Author" fill sizes="40px" className="object-cover p-1" />
+                 <Image src={blog.author?.avatar || "/images/logo.png"} alt="Author" fill sizes="40px" className="object-cover p-1 rounded-full" />
                </div>
                <div className="text-start">
                  <p className="text-sm font-bold text-foreground">{blog.author?.username || 'Dego'}</p>

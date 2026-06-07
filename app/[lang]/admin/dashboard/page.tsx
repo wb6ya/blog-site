@@ -6,10 +6,16 @@ import Link from "next/link";
 import Image from "next/image";
 import en from "@/dictionaries/en.json";
 import ar from "@/dictionaries/ar.json";
+import Modal from "@/app/components/Modal";
 
 export default function AdminDashboard() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'success' | 'error' | 'warning' | 'info'>('info');
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalTitle, setModalTitle] = useState("");
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const params = useParams();
@@ -45,8 +51,17 @@ export default function AdminDashboard() {
     fetchBlogs();
   }, [router, lang]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(dict.admin.deleteConfirm)) return;
+  const confirmDelete = (id: string) => {
+    setItemToDelete(id);
+    setModalType('warning');
+    setModalTitle(lang === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete');
+    setModalMessage(dict.admin.deleteConfirm);
+    setModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    const id = itemToDelete;
 
     try {
       const token = localStorage.getItem("adminToken");
@@ -60,13 +75,26 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setBlogs(blogs.filter((b: any) => b._id !== id));
+        setModalType('success');
+        setModalTitle(lang === 'ar' ? 'تم الحذف' : 'Deleted');
+        setModalMessage(lang === 'ar' ? 'تم حذف المقال بنجاح.' : 'Blog deleted successfully.');
+        setItemToDelete(null);
+        setModalOpen(true);
       } else {
         const data = await res.json();
-        alert(data.message || "فشل الحذف");
+        setModalType('error');
+        setModalTitle(lang === 'ar' ? 'خطأ' : 'Error');
+        setModalMessage(data.message || "فشل الحذف");
+        setItemToDelete(null);
+        setModalOpen(true);
       }
     } catch (error) {
       console.error("Error deleting:", error);
-      alert("حدث خطأ أثناء الحذف");
+      setModalType('error');
+      setModalTitle(lang === 'ar' ? 'خطأ' : 'Error');
+      setModalMessage("حدث خطأ أثناء الحذف");
+      setItemToDelete(null);
+      setModalOpen(true);
     }
   };
 
@@ -108,22 +136,6 @@ export default function AdminDashboard() {
               <h1 className="text-2xl font-extrabold text-white tracking-wide">{dict.admin.dashboard}</h1>
               <p className="text-sm text-muted-foreground mt-1">{dict.admin.welcomeBack}</p>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-4 bg-surface/30 p-1.5 rounded-full border border-glass-border backdrop-blur-md">
-             <Link href={`/${lang}`} className="text-sm font-medium text-gray-300 hover:text-white transition-colors px-4 py-2 rounded-full hover:bg-white/5">{dict.nav.home}</Link>
-             {isAdmin && (
-               <Link href={`/${lang}/admin/profile`} className="text-sm font-medium text-brand hover:text-brand-light transition-colors px-4 py-2 rounded-full hover:bg-brand/10">{lang === 'ar' ? 'الملف الشخصي' : 'Profile'}</Link>
-             )}
-             <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-sm font-bold text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 px-5 py-2 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              {dict.admin.logout}
-            </button>
           </div>
         </div>
       </header>
@@ -216,7 +228,7 @@ export default function AdminDashboard() {
                             </svg>
                           </Link>
                           <button
-                            onClick={() => handleDelete(blog._id)}
+                            onClick={() => confirmDelete(blog._id)}
                             className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white transition-all duration-300 tooltip-wrapper"
                             title={dict.admin.delete}
                           >
@@ -234,6 +246,20 @@ export default function AdminDashboard() {
           </div>
         </div>
       </main>
+      
+      <Modal 
+        isOpen={modalOpen} 
+        onClose={() => {
+          setModalOpen(false);
+          setItemToDelete(null);
+        }}
+        title={modalTitle}
+        message={modalMessage}
+        type={modalType}
+        onConfirm={itemToDelete ? handleDelete : undefined}
+        confirmText={itemToDelete ? (lang === 'ar' ? 'حذف' : 'Delete') : undefined}
+        cancelText={itemToDelete ? (lang === 'ar' ? 'إلغاء' : 'Cancel') : undefined}
+      />
     </div>
   );
 }
