@@ -26,6 +26,7 @@ export function proxy(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.includes('/favicon.ico') ||
+    pathname.includes('/icon') ||
     pathname.startsWith('/images')
   ) {
     return NextResponse.next();

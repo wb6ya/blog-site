@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import en from "@/dictionaries/en.json";
+import ar from "@/dictionaries/ar.json";
 
 export default function CreateBlog() {
   const [title, setTitle] = useState("");
@@ -13,6 +15,9 @@ export default function CreateBlog() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  // Assume language is in URL. In client component without params prop, we can get it from path:
+  const lang = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : 'ar';
+  const dict = lang === 'en' ? en : ar;
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -80,14 +85,14 @@ export default function CreateBlog() {
   };
 
   return (
-    <div className="container mx-auto px-4 max-w-3xl mt-12 mb-20" dir="rtl">
+    <div className="container mx-auto px-4 max-w-3xl mt-24 mb-20 relative z-10" dir="rtl">
       <div className="flex items-center mb-8">
         <Link href="/admin/dashboard" className="text-gray-400 hover:text-white transition-colors ml-4">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </Link>
-        <h1 className="text-3xl font-bold text-white">إضافة مقال جديد</h1>
+        <h1 className="text-3xl font-bold text-white">{dict.admin.addNewPost}</h1>
       </div>
 
       <div className="glass-panel rounded-3xl p-8">
@@ -99,14 +104,14 @@ export default function CreateBlog() {
 
         {success && (
           <div className="bg-green-500/20 border border-green-500/50 text-green-200 px-4 py-3 rounded-xl mb-6">
-            تمت إضافة المقال بنجاح! سيتم تحويلك... (بواسطة الذكاء الاصطناعي تم ترجمته)
+            {dict.admin.createSuccess}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              عنوان المقال
+              {dict.admin.title}
             </label>
             <input
               type="text"
@@ -121,7 +126,7 @@ export default function CreateBlog() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              الوصف المختصر للمقال
+              {dict.admin.description}
             </label>
             <textarea
               required
@@ -136,7 +141,7 @@ export default function CreateBlog() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              المحتوى الكامل
+              {dict.admin.content}
             </label>
             <textarea
               required
@@ -151,7 +156,7 @@ export default function CreateBlog() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              صورة الغلاف (مطلوبة)
+              {dict.admin.image}
             </label>
             <input
               type="file"
@@ -160,6 +165,11 @@ export default function CreateBlog() {
               onChange={(e) => setImage(e.target.files?.[0] || null)}
               className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/20 file:text-brand hover:file:bg-brand/30 transition-colors"
             />
+            {image && (
+              <div className="mt-4 relative w-full h-48 rounded-xl overflow-hidden border border-gray-700">
+                <img src={URL.createObjectURL(image)} alt="Preview" className="w-full h-full object-cover" />
+              </div>
+            )}
           </div>
 
           <button
@@ -167,7 +177,7 @@ export default function CreateBlog() {
             disabled={loading}
             className="w-full bg-brand hover:bg-brand-light text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
           >
-            {loading ? "جاري النشر..." : "نشر المقال"}
+            {loading ? dict.admin.publishing : dict.admin.publish}
           </button>
         </form>
       </div>

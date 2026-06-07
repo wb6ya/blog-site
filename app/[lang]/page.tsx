@@ -1,5 +1,4 @@
 import Blogs from "../components/Blogs";
-import Hero from "../components/Hero";
 import { getDictionary } from "@/dictionaries";
 
 async function getBlogs(page: number) {
@@ -50,14 +49,12 @@ export default async function Home(props: {
   const { blogs, currentPage, totalPages } = await getBlogs(page);
   
   return (
-    <main className="min-h-screen">
-      <Hero dict={dict.hero} />
-
-      {/* Blogs Section */}
-      <section className="container mx-auto px-4 max-w-6xl pb-24">
+    <main className="min-h-screen pt-24 pb-24">
+      <section className="container mx-auto px-4 max-w-7xl">
         <Blogs 
           blogs={blogs} 
           dict={dict.blogs} 
+          heroDict={dict.hero}
           lang={lang} 
           currentPage={currentPage}
           totalPages={totalPages}

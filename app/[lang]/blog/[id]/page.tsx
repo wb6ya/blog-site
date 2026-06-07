@@ -2,9 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/dictionaries";
+import ShareButton from "@/app/components/ShareButton";
 
 // جلب بيانات مقال واحد
-async function getBlog(id) {
+async function getBlog(id: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
     const res = await fetch(`${apiUrl}/blog/${id}`, { cache: "no-store" });
@@ -20,8 +21,18 @@ async function getBlog(id) {
   }
 }
 
-export default async function BlogPage({ params }) {
-  const { id, lang } = await params;
+// Calculate Read Time
+function calculateReadTime(content: string) {
+  if (!content) return 1;
+  const words = content.trim().split(/\s+/).length;
+  const wpm = 225; // average adult reading speed
+  return Math.ceil(words / wpm);
+}
+
+export default async function BlogPage(props: {
+  params: Promise<{ id: string; lang: string }>;
+}) {
+  const { id, lang } = await props.params;
   const blog = await getBlog(id);
   const dict = await getDictionary(lang as "ar" | "en");
 
@@ -29,44 +40,86 @@ export default async function BlogPage({ params }) {
     notFound();
   }
 
+  const title = lang === 'en' && blog.titleEn ? blog.titleEn : blog.title;
+  const content = lang === 'en' && blog.contentEn ? blog.contentEn : blog.content;
+  const imgSrc = blog.image ? (blog.image.startsWith('http') || blog.image.startsWith('/') ? blog.image : `/${blog.image}`) : null;
+  const readTime = calculateReadTime(content);
+  
+  const formattedDate = new Date(blog.createdAt).toLocaleDateString(lang === 'ar' ? "ar-SA" : "en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
-    <main className="min-h-screen relative pb-32">
-      {/* Background overlay specifically for blog post */}
-      <div className="absolute top-0 left-0 w-full h-[60vh] bg-gradient-to-b from-muted to-transparent pointer-events-none -z-10 opacity-30"></div>
-      
-      {/* Header Section */}
-      <section className="pt-32 pb-10 px-4 flex flex-col items-center text-center relative z-10">
-        <div className="container max-w-4xl mx-auto">
-          <Link href={`/${lang}`} className="inline-flex items-center text-muted-foreground hover:text-foreground mb-10 transition-colors text-sm tracking-wide group font-medium">
-            <svg className="w-5 h-5 transition-transform ml-2 rotate-180 group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            {dict.blogs.backToBlogs}
-          </Link>
-          
-          <div className="inline-flex items-center gap-4 text-muted-foreground font-mono text-sm tracking-wider mb-6">
-            <span className="w-12 h-[1px] bg-glass-border inline-block"></span>
-            {new Date(blog.createdAt).toLocaleDateString(lang === 'ar' ? "ar-SA" : "en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-            <span className="w-12 h-[1px] bg-glass-border inline-block"></span>
+    <main className="min-h-screen relative pb-32" dir={lang === 'en' ? 'ltr' : 'rtl'}>
+
+
+      {/* Cinematic Header */}
+      <section className="relative w-full h-[70vh] md:h-[80vh] flex items-center justify-center overflow-hidden">
+        {/* Full-width Background Image */}
+        {imgSrc && (
+          <>
+            <Image
+              src={imgSrc}
+              alt={title}
+              fill
+              className="object-cover scale-105"
+              priority
+            />
+            {/* Blur & Overlay */}
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-xl pointer-events-none"></div>
+            <div className="absolute inset-0 bg-linear-to-b from-transparent via-background/80 to-background pointer-events-none"></div>
+          </>
+        )}
+        {!imgSrc && (
+           <div className="absolute inset-0 bg-linear-to-b from-brand/10 to-background pointer-events-none"></div>
+        )}
+
+        {/* Header Content in Glass Box */}
+        <div className="relative z-10 container max-w-4xl mx-auto px-4 mt-32">
+          <div className="flex mb-8">
+            <Link href={`/${lang}`} className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide group font-medium bg-surface/50 backdrop-blur-md px-5 py-2.5 rounded-full border border-glass-border shadow-md">
+              <svg className={`w-4 h-4 transition-transform mx-2 ${lang === 'en' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+              {dict.blogs.backToBlogs}
+            </Link>
           </div>
-          
-          <h1 className="text-4xl md:text-6xl font-extrabold text-foreground leading-tight mb-8">
-            {lang === 'en' && blog.titleEn ? blog.titleEn : blog.title}
-          </h1>
+
+          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] text-center flex flex-col items-center">
+            
+            <div className="flex flex-wrap justify-center items-center gap-3 text-brand-light font-mono text-xs tracking-widest uppercase mb-6">
+              <span>{formattedDate}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-brand"></span>
+              <span>{readTime} {dict.blogs.readTime}</span>
+            </div>
+
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-foreground leading-[1.2] mb-8 drop-shadow-md break-words max-w-full">
+              {title}
+            </h1>
+
+            <div className="flex items-center gap-4 pt-6 border-t border-glass-border w-full justify-center">
+               {/* Author */}
+               <div className="w-10 h-10 rounded-full bg-black/40 border border-white/10 overflow-hidden relative">
+                 <Image src={blog.author?.avatar || "/images/logo.png"} alt="Author" fill className="object-cover p-1" />
+               </div>
+               <div className="text-start">
+                 <p className="text-sm font-bold text-foreground">{blog.author?.username || 'Dego'}</p>
+                 <p className="text-xs text-brand-light/80">{dict.blogs.author}</p>
+               </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Hero Image */}
-      {blog.image && (
-        <section className="container max-w-5xl mx-auto px-4 mb-16 relative z-10">
-          <div className="relative w-full h-[50vh] md:h-[65vh] rounded-[2rem] overflow-hidden border border-glass-border">
+      {/* Main Hero Image (Crisp) */}
+      {imgSrc && (
+        <section className="container max-w-5xl mx-auto px-4 relative z-20 -mt-20 md:-mt-32 mb-16">
+          <div className="relative w-full h-[40vh] md:h-[60vh] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
             <Image
-              src={blog.image.startsWith('http') || blog.image.startsWith('/') ? blog.image : `/${blog.image}`}
-              alt={lang === 'en' && blog.titleEn ? blog.titleEn : blog.title}
+              src={imgSrc}
+              alt={title}
               fill
               className="object-cover"
               priority
@@ -76,12 +129,31 @@ export default async function BlogPage({ params }) {
       )}
 
       {/* Article Content */}
-      <section className="container max-w-3xl mx-auto px-6 relative z-10">
-        <article className="max-w-none">
-          <div className="text-lg md:text-xl text-foreground/80 leading-relaxed font-light whitespace-pre-wrap [&>p]:mb-8 [&>h2]:text-3xl [&>h2]:font-bold [&>h2]:text-foreground [&>h2]:mt-12 [&>h2]:mb-6 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>ul>li]:mb-3 [&>a]:text-brand [&>a]:underline [&>a]:underline-offset-4 hover:[&>a]:text-foreground">
-            {lang === 'en' && blog.contentEn ? blog.contentEn : blog.content}
+      <section className={`container ${imgSrc ? 'mt-8' : 'mt-16'} max-w-2xl mx-auto px-6 relative z-10`}>
+        <article className="prose-container max-w-none">
+          <div className="text-lg text-foreground/80 leading-relaxed font-light whitespace-pre-wrap 
+            [&>p]:mb-8 [&>p:first-child]:text-xl [&>p:first-child]:leading-loose [&>p:first-child]:font-normal [&>p:first-child]:text-foreground
+            [&>h2]:text-3xl [&>h2]:font-bold [&>h2]:text-foreground [&>h2]:mt-16 [&>h2]:mb-6 
+            [&>h3]:text-2xl [&>h3]:font-bold [&>h3]:text-foreground/90 [&>h3]:mt-10 [&>h3]:mb-4
+            [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-8 [&>ul>li]:mb-3 [&>ul>li]:pl-2
+            [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-8 [&>ol>li]:mb-3 [&>ol>li]:pl-2
+            [&>blockquote]:border-s-4 [&>blockquote]:border-brand [&>blockquote]:px-6 [&>blockquote]:py-4 [&>blockquote]:my-10 [&>blockquote]:bg-brand/5 [&>blockquote]:text-xl [&>blockquote]:font-medium [&>blockquote]:italic [&>blockquote]:rounded-e-xl [&>blockquote]:shadow-sm
+            [&>a]:text-brand [&>a]:underline [&>a]:underline-offset-4 hover:[&>a]:text-brand-light transition-colors
+          ">
+            {content}
           </div>
         </article>
+
+        {/* Footer / Share */}
+        <div className="mt-20 pt-10 border-t border-glass-border flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3 text-muted-foreground text-sm font-medium">
+             <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+             {dict.blogs.thanks}
+          </div>
+          <div className="flex gap-4">
+            <ShareButton lang={lang} title={title} />
+          </div>
+        </div>
       </section>
     </main>
   );

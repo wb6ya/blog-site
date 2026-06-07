@@ -1,47 +1,52 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #000000;
-  --color-brand-light: #333333;
-  --color-brand-dark: #000000;
+  --color-brand: #4f46e5;
+  --color-brand-light: #818cf8;
+  --color-brand-dark: #3730a3;
   
-  --color-background: #ffffff;
-  --color-foreground: #09090b;
-  --color-muted: #f4f4f5;
-  --color-muted-foreground: #71717a;
+  --color-background: #030712;
+  --color-foreground: #f8fafc;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
   
-  --color-surface: #ffffff;
-  --color-glass-border: #e4e4e7;
-  --color-glass-border-hover: #d4d4d8;
+  --color-surface: #0f172a;
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-border-hover: rgba(255, 255, 255, 0.15);
   
   --font-sans: var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-brand: #ffffff;
-    --color-brand-light: #e5e5e5;
-    --color-brand-dark: #ffffff;
-    
-    --color-background: #09090b;
-    --color-foreground: #fafafa;
-    --color-muted: #27272a;
-    --color-muted-foreground: #a1a1aa;
-    
-    --color-surface: #09090b;
-    --color-glass-border: #27272a;
-    --color-glass-border-hover: #3f3f46;
-  }
+/* Force dark mode by default for that premium tech vibe */
+:root {
+  --color-brand: #4f46e5;
+  --color-brand-light: #818cf8;
+  --color-brand-dark: #3730a3;
+  
+  --color-background: #020617; /* Slate 950 - Deep Space */
+  --color-foreground: #f8fafc; /* Slate 50 */
+  --color-muted: #0f172a; /* Slate 900 */
+  --color-muted-foreground: #94a3b8; /* Slate 400 */
+  
+  --color-surface: rgba(15, 23, 42, 0.6);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-border-hover: rgba(255, 255, 255, 0.15);
 }
 
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
+  overflow-x: hidden;
 }
 
+/* Premium Grid Pattern with fading edges */
 .bg-grid-pattern {
-  background-image: linear-gradient(to right, #80808012 1px, transparent 1px), linear-gradient(to bottom, #80808012 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), 
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
 }

@@ -37,7 +37,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
         <Navbar lang={lang} dict={dict.nav} />
-        <div className="flex-grow">
+        <div className="grow">
           {children}
         </div>
       </body>

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import en from "@/dictionaries/en.json";
+import ar from "@/dictionaries/ar.json";
 
 export default function EditBlog() {
   const [title, setTitle] = useState("");
@@ -18,6 +20,9 @@ export default function EditBlog() {
   
   const router = useRouter();
   const params = useParams();
+  
+  const lang = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : 'ar';
+  const dict = lang === 'en' ? en : ar;
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -108,17 +113,17 @@ export default function EditBlog() {
     }
   };
 
-  if (fetching) return <div className="text-center mt-20 text-white">جاري التحميل...</div>;
+  if (fetching) return <div className="text-center mt-20 text-white">{dict.admin.loading}</div>;
 
   return (
-    <div className="container mx-auto px-4 max-w-3xl mt-12 mb-20" dir="rtl">
+    <div className="container mx-auto px-4 max-w-3xl mt-24 mb-20 relative z-10" dir="rtl">
       <div className="flex items-center mb-8">
         <Link href="/admin/dashboard" className="text-gray-400 hover:text-white transition-colors ml-4">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </Link>
-        <h1 className="text-3xl font-bold text-white">تعديل المقال</h1>
+        <h1 className="text-3xl font-bold text-white">{dict.admin.editPost}</h1>
       </div>
 
       <div className="glass-panel rounded-3xl p-8">
@@ -130,14 +135,14 @@ export default function EditBlog() {
 
         {success && (
           <div className="bg-green-500/20 border border-green-500/50 text-green-200 px-4 py-3 rounded-xl mb-6">
-            تم حفظ التعديلات بنجاح! سيتم تحويلك...
+            {dict.admin.editSuccess}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              عنوان المقال
+              {dict.admin.title}
             </label>
             <input
               type="text"
@@ -151,7 +156,7 @@ export default function EditBlog() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              الوصف المختصر للمقال
+              {dict.admin.description}
             </label>
             <textarea
               required
@@ -165,7 +170,7 @@ export default function EditBlog() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              المحتوى الكامل
+              {dict.admin.content}
             </label>
             <textarea
               required
@@ -179,13 +184,13 @@ export default function EditBlog() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              صورة الغلاف (تحديث)
+              {dict.admin.coverUpdate}
             </label>
             {currentImageUrl && !image && (
               <div className="mb-4 relative w-full h-40 rounded-xl overflow-hidden border border-gray-700">
                 <Image src={currentImageUrl} alt="Current cover" fill className="object-cover opacity-60" />
                 <div className="absolute inset-0 flex items-center justify-center text-white font-medium drop-shadow-md">
-                  الصورة الحالية
+                  {dict.admin.currentCover}
                 </div>
               </div>
             )}
@@ -195,7 +200,15 @@ export default function EditBlog() {
               onChange={(e) => setImage(e.target.files?.[0] || null)}
               className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/20 file:text-brand hover:file:bg-brand/30 transition-colors"
             />
-            <p className="text-xs text-gray-500 mt-2">اترك الحقل فارغاً إذا كنت لا تود تغيير الصورة.</p>
+            {image && (
+              <div className="mt-4 relative w-full h-40 rounded-xl overflow-hidden border border-brand/50 shadow-[0_0_15px_rgba(79,70,229,0.2)]">
+                <img src={URL.createObjectURL(image)} alt="Preview new cover" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-medium drop-shadow-md opacity-0 hover:opacity-100 transition-opacity">
+                  {dict.admin.newCover}
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-2">{dict.admin.coverOptional}</p>
           </div>
 
           <button
@@ -203,7 +216,7 @@ export default function EditBlog() {
             disabled={loading}
             className="w-full bg-brand hover:bg-brand-light text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
           >
-            {loading ? "جاري الحفظ..." : "حفظ التعديلات"}
+            {loading ? dict.admin.saving : dict.admin.saveChanges}
           </button>
         </form>
       </div>

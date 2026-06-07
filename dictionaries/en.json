@@ -1,32 +1,61 @@
 {
   "nav": {
     "home": "Home",
-    "personalSite": "Personal Site"
+    "personalSite": "My Portfolio"
   },
   "hero": {
-    "badge": "Writing to Inspire",
-    "title1": "Ideas & Experiences in",
-    "title2": "Tech and Development",
-    "desc": "A space where I share my thoughts and experiences in software development, design, and tech in general. Everything about modern web."
+    "badge": "Building to Inspire",
+    "title1": "Crafting",
+    "title2": "Digital Experiences",
+    "desc": "Your destination for exploring the latest insights in software engineering, UI design, and the future of the modern web."
   },
   "blogs": {
-    "empty": "No articles available.",
-    "readArticle": "Read Article",
-    "noImage": "No image",
-    "backToBlogs": "Back to Articles"
+    "empty": "No articles published yet. We're currently crafting something amazing.",
+    "readArticle": "Read Full Article",
+    "noImage": "No Image",
+    "backToBlogs": "Back to Articles",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "readTime": "min read",
+    "author": "Author",
+    "share": "Share",
+    "thanks": "Thanks for reading to the end!"
   },
   "admin": {
-    "dashboard": "Manage Articles",
-    "newPost": "+ New Post",
-    "logout": "Logout",
-    "image": "Image",
-    "title": "Title",
-    "date": "Date",
+    "dashboard": "Dashboard",
+    "newPost": "New Post",
+    "logout": "Sign Out",
+    "image": "Cover Image",
+    "title": "Main Title",
+    "date": "Publish Date",
     "actions": "Actions",
-    "empty": "No articles added yet.",
+    "empty": "Your workspace is empty. Start writing your first post.",
     "edit": "Edit",
     "delete": "Delete",
-    "deleteConfirm": "Are you sure you want to delete this article?",
-    "loading": "Loading..."
+    "deleteConfirm": "Are you absolutely sure you want to delete this post permanently?",
+    "loading": "Preparing your workspace...",
+    "totalArticles": "Total Articles",
+    "backToSite": "Back to site",
+    "welcomeBack": "Welcome Back",
+    "signInText": "Sign in to access your dashboard",
+    "email": "Email Address",
+    "password": "Password",
+    "authenticating": "Authenticating...",
+    "loginBtn": "Sign In",
+    "description": "Short Description",
+    "content": "Full Content",
+    "publish": "Publish Article",
+    "publishing": "Publishing...",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "noCover": "None",
+    "addNewPost": "Add New Article",
+    "editPost": "Edit Article",
+    "coverUpdate": "Cover Image (Update)",
+    "coverOptional": "Leave blank if you don't want to change the image.",
+    "currentCover": "Current Cover",
+    "newCover": "New Cover",
+    "createSuccess": "Article added successfully! Redirecting...",
+    "editSuccess": "Changes saved successfully! Redirecting..."
   }
 }
