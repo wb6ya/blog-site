@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default function AdminDashboard() {
-  const [blogs, setBlogs] = useState([]);
+  const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -17,6 +17,8 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (Array.isArray(data)) {
         setBlogs(data);
+      } else if (data && Array.isArray(data.blogs)) {
+        setBlogs(data.blogs);
       }
     } catch (error) {
       console.error("Error fetching blogs:", error);
@@ -112,7 +114,7 @@ export default function AdminDashboard() {
                     <td className="p-4">
                       {blog.image ? (
                         <div className="relative w-16 h-12 rounded overflow-hidden">
-                          <Image src={blog.image} alt={blog.title} fill className="object-cover" />
+                          <Image src={blog.image.startsWith('http') || blog.image.startsWith('/') ? blog.image : `/${blog.image}`} alt={blog.title} fill className="object-cover" />
                         </div>
                       ) : (
                         <div className="w-16 h-12 bg-gray-800 rounded flex items-center justify-center text-xs text-gray-500">

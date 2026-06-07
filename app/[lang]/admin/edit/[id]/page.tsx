@@ -14,6 +14,7 @@ export default function EditBlog() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   
   const router = useRouter();
   const params = useParams();
@@ -54,6 +55,23 @@ export default function EditBlog() {
     setLoading(true);
     setError("");
 
+    // التحقق من المدخلات (Client-side Validation)
+    if (title.trim().length < 3) {
+      setError("يجب أن يتكون العنوان من 3 أحرف على الأقل.");
+      setLoading(false);
+      return;
+    }
+    if (description.trim().length < 10) {
+      setError("يجب أن يتكون الوصف من 10 أحرف على الأقل.");
+      setLoading(false);
+      return;
+    }
+    if (content.trim().length < 50) {
+      setError("يجب أن يتكون المحتوى من 50 حرفاً على الأقل.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("adminToken");
       const formData = new FormData();
@@ -79,7 +97,10 @@ export default function EditBlog() {
         throw new Error(data.message || "فشل تعديل المقال");
       }
 
-      router.push("/admin/dashboard");
+      setSuccess(true);
+      setTimeout(() => {
+        router.push("/admin/dashboard");
+      }, 2000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -107,6 +128,12 @@ export default function EditBlog() {
           </div>
         )}
 
+        {success && (
+          <div className="bg-green-500/20 border border-green-500/50 text-green-200 px-4 py-3 rounded-xl mb-6">
+            تم حفظ التعديلات بنجاح! سيتم تحويلك...
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -118,12 +145,13 @@ export default function EditBlog() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-brand transition-colors"
+              minLength={3}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              وصف مختصر للمقال
+              الوصف المختصر للمقال
             </label>
             <textarea
               required
@@ -131,6 +159,7 @@ export default function EditBlog() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-brand transition-colors resize-none"
+              minLength={10}
             />
           </div>
 
@@ -144,6 +173,7 @@ export default function EditBlog() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-brand transition-colors resize-none"
+              minLength={50}
             />
           </div>
 

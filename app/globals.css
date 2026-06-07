@@ -1,99 +1,47 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #8a2be2;
-  --color-brand-light: #b066ff;
-  --color-brand-dark: #4d0099;
-  --color-background: #020202; /* Extremely deep dark */
-  --color-foreground: #ededed;
+  --color-brand: #000000;
+  --color-brand-light: #333333;
+  --color-brand-dark: #000000;
   
-  --color-surface: rgba(25, 25, 25, 0.4);
-  --color-surface-hover: rgba(35, 35, 35, 0.6);
-  --color-glass-border: rgba(255, 255, 255, 0.05);
-  --color-glass-border-hover: rgba(255, 255, 255, 0.15);
+  --color-background: #ffffff;
+  --color-foreground: #09090b;
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #71717a;
+  
+  --color-surface: #ffffff;
+  --color-glass-border: #e4e4e7;
+  --color-glass-border-hover: #d4d4d8;
   
   --font-sans: var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
 
-:root {
-  color-scheme: dark;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-brand: #ffffff;
+    --color-brand-light: #e5e5e5;
+    --color-brand-dark: #ffffff;
+    
+    --color-background: #09090b;
+    --color-foreground: #fafafa;
+    --color-muted: #27272a;
+    --color-muted-foreground: #a1a1aa;
+    
+    --color-surface: #09090b;
+    --color-glass-border: #27272a;
+    --color-glass-border-hover: #3f3f46;
+  }
 }
 
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
 }
 
-/* Background Noise Pattern for Premium Texture */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -2;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  pointer-events: none;
-}
-
-/* Glowing Background Orbs */
-body::after {
-  content: "";
-  position: fixed;
-  top: -20vh;
-  left: 20vw;
-  width: 60vw;
-  height: 60vh;
-  background: radial-gradient(circle, rgba(138,43,226,0.15) 0%, transparent 60%);
-  z-index: -1;
-  pointer-events: none;
-  filter: blur(100px);
-  animation: float 15s ease-in-out infinite alternate;
-}
-
-@keyframes float {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(-50px, 50px) scale(1.1);
-  }
-}
-
-/* Ultra Premium Glass Panel */
-.glass-panel {
-  background: var(--color-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--color-glass-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.glass-panel-hover:hover {
-  background: var(--color-surface-hover);
-  border-color: var(--color-glass-border-hover);
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(138,43,226,0.2);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #050505;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #444;
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, #80808012 1px, transparent 1px), linear-gradient(to bottom, #80808012 1px, transparent 1px);
+  background-size: 24px 24px;
 }
