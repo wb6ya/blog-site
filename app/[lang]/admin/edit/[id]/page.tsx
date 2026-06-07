@@ -60,6 +60,7 @@ export default function EditBlog() {
   // Tags State
   const [tags, setTags] = useState<string[]>([]);
   const [systemTags, setSystemTags] = useState<{_id: string, name: string}[]>([]);
+  const [token, setToken] = useState("");
   
   // Cropper States
   const [showCropper, setShowCropper] = useState(false);
