@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -57,8 +58,20 @@ function BlogCard({ blog, dict, lang, featured = false, isBento = false, bentoIn
         </div>
 
         <div className="flex flex-col grow" dir={lang === 'en' ? 'ltr' : 'rtl'}>
-          <div className="text-xs text-brand-light/80 mb-4 font-mono tracking-widest uppercase">
-            {dateStr}
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-xs text-brand-light/80 font-mono tracking-widest uppercase">
+              {dateStr}
+            </div>
+            {blog.tags && blog.tags.length > 0 && (
+              <div className="flex gap-1">
+                {blog.tags.slice(0, 2).map((tag, i) => (
+                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-brand/10 border border-brand/20 text-brand-light">
+                    {tag}
+                  </span>
+                ))}
+                {blog.tags.length > 2 && <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface text-muted-foreground border border-glass-border">+{blog.tags.length - 2}</span>}
+              </div>
+            )}
           </div>
           
           <h2 className={`${featured || (isBento && bentoIndex === 0) ? 'text-2xl md:text-4xl' : 'text-xl'} font-bold text-foreground mb-4 leading-tight line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-linear-to-r group-hover:from-brand-light group-hover:to-brand transition-all duration-500`}>
@@ -126,8 +139,42 @@ function IntegratedHero({ heroBlog, heroDict, dict, lang }) {
   );
 }
 
-function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages }) {
+function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSearch = "", currentTag = "" }) {
   const container = useRef(null);
+  const router = useRouter();
+  const [searchInput, setSearchInput] = useState(currentSearch);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchInput.trim()) params.set('search', searchInput.trim());
+    if (currentTag) params.set('tag', currentTag);
+    router.push(`/${lang}?${params.toString()}`);
+  };
+
+  const handleTagClick = (tag) => {
+    const params = new URLSearchParams();
+    if (currentSearch) params.set('search', currentSearch);
+    if (tag) params.set('tag', tag);
+    router.push(`/${lang}?${params.toString()}`);
+  };
+
+  const clearFilters = () => {
+    setSearchInput("");
+    router.push(`/${lang}`);
+  };
+
+  const buildPageUrl = (page) => {
+    const params = new URLSearchParams();
+    params.set('page', page);
+    if (currentSearch) params.set('search', currentSearch);
+    if (currentTag) params.set('tag', currentTag);
+    return `/${lang}?${params.toString()}`;
+  };
+
+  const popularTags = lang === 'ar' 
+    ? ['تكنولوجيا', 'برمجة', 'تصميم', 'الذكاء الاصطناعي', 'تطوير الويب']
+    : ['Tech', 'Programming', 'Design', 'AI', 'Web Development'];
 
   useGSAP(() => {
     if (!blogs || blogs.length === 0) return;
@@ -154,20 +201,66 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages }) {
   }
 
   const isFirstPage = currentPage === 1;
-  const heroBlog = isFirstPage && blogs.length > 0 ? blogs[0] : null;
-  const featuredGrid = isFirstPage && blogs.length > 1 ? blogs.slice(1, 5) : [];
-  const standardBlogs = isFirstPage ? blogs.slice(5) : blogs;
+  const hasFilters = Boolean(currentSearch || currentTag);
+  const showHero = isFirstPage && !hasFilters;
+  
+  const heroBlog = showHero && blogs.length > 0 ? blogs[0] : null;
+  const featuredGrid = showHero && blogs.length > 1 ? blogs.slice(1, 5) : [];
+  const standardBlogs = showHero ? blogs.slice(5) : blogs;
 
   return (
     <div ref={container} className="relative z-10 flex flex-col gap-12">
       
+      {/* Search and Tags Section */}
+      <div className="flex flex-col gap-6 my-4 w-full">
+        <form onSubmit={handleSearch} className="relative w-full max-w-2xl mx-auto">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={dict?.searchPlaceholder || "Search articles..."}
+            className={`w-full py-4 rounded-2xl bg-surface/80 border border-glass-border text-foreground focus:outline-none focus:border-brand/50 transition-colors shadow-lg backdrop-blur-md ${lang === 'en' ? 'pl-14 pr-4' : 'pr-14 pl-4'}`}
+            dir={lang === 'en' ? 'ltr' : 'rtl'}
+          />
+          <button type="submit" className={`absolute top-1/2 -translate-y-1/2 ${lang === 'ar' ? 'right-5' : 'left-5'} text-muted-foreground hover:text-brand transition-colors`}>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </form>
+
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground mx-2">{dict?.popularTags || "Popular Topics"}:</span>
+          <button
+            onClick={() => handleTagClick("")}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${!currentTag ? 'bg-brand text-white shadow-[0_0_15px_rgba(var(--brand),0.3)]' : 'bg-surface border border-glass-border text-muted-foreground hover:text-foreground hover:border-brand/30'}`}
+          >
+            {dict?.allTopics || "All Topics"}
+          </button>
+          {popularTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => handleTagClick(tag)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${currentTag === tag ? 'bg-brand text-white shadow-[0_0_15px_rgba(var(--brand),0.3)]' : 'bg-surface border border-glass-border text-muted-foreground hover:text-foreground hover:border-brand/30'}`}
+            >
+              {tag}
+            </button>
+          ))}
+          {hasFilters && (
+            <button onClick={clearFilters} className="px-4 py-1.5 rounded-full text-sm font-medium text-red-400 hover:bg-red-400/10 transition-colors mx-2">
+              {dict?.clearSearch || "Clear filters"}
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Integrated Hero Section */}
-      {isFirstPage && (
+      {showHero && (
         <IntegratedHero heroBlog={heroBlog} heroDict={heroDict} dict={dict} lang={lang} />
       )}
 
       {/* Bento Grid Section */}
-      {isFirstPage && featuredGrid.length > 0 && (
+      {showHero && featuredGrid.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {featuredGrid.map((blog, index) => {
             let spanClasses = "";
@@ -186,7 +279,7 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages }) {
       )}
 
       {/* Divider if we have standard blogs after featured */}
-      {isFirstPage && standardBlogs.length > 0 && (
+      {showHero && standardBlogs.length > 0 && (
         <div className="w-full h-px bg-glass-border my-6"></div>
       )}
 
@@ -203,7 +296,7 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages }) {
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-12 pt-8 border-t border-glass-border">
           {currentPage > 1 ? (
-            <Link href={`/${lang}?page=${currentPage - 1}`} className="px-6 py-2 rounded-full border border-glass-border hover:bg-muted text-foreground transition-colors text-sm font-medium">
+            <Link href={buildPageUrl(currentPage - 1)} className="px-6 py-2 rounded-full border border-glass-border hover:bg-muted text-foreground transition-colors text-sm font-medium">
                {dict?.blogs?.prevPage || (lang === 'ar' ? 'السابق' : 'Previous')}
             </Link>
           ) : (
@@ -217,7 +310,7 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages }) {
           </span>
 
           {currentPage < totalPages ? (
-            <Link href={`/${lang}?page=${currentPage + 1}`} className="px-6 py-2 rounded-full border border-glass-border hover:bg-muted text-foreground transition-colors text-sm font-medium">
+            <Link href={buildPageUrl(currentPage + 1)} className="px-6 py-2 rounded-full border border-glass-border hover:bg-muted text-foreground transition-colors text-sm font-medium">
                {dict?.blogs?.nextPage || (lang === 'ar' ? 'التالي' : 'Next')}
             </Link>
           ) : (

@@ -1,10 +1,16 @@
 import Blogs from "../components/Blogs";
 import { getDictionary } from "@/dictionaries";
 
-async function getBlogs(page: number) {
+async function getBlogs(page: number, search: string, tag: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
-    const res = await fetch(`${apiUrl}/blog?page=${page}&limit=10`, { cache: "no-store" });
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', '10');
+    if (search) params.append('search', search);
+    if (tag) params.append('tag', tag);
+
+    const res = await fetch(`${apiUrl}/blog?${params.toString()}`, { cache: "no-store" });
     if (!res.ok) {
       throw new Error("Failed to fetch blogs");
     }
@@ -42,11 +48,13 @@ export default async function Home(props: {
 }) {
   const searchParams = await props.searchParams;
   const page = parseInt(searchParams?.page as string || "1", 10);
+  const search = searchParams?.search as string || "";
+  const tag = searchParams?.tag as string || "";
   
   const { lang } = await props.params;
   const dict = await getDictionary(lang as "ar" | "en");
   
-  const { blogs, currentPage, totalPages } = await getBlogs(page);
+  const { blogs, currentPage, totalPages } = await getBlogs(page, search, tag);
   
   return (
     <main className="min-h-screen pt-24 pb-24">
@@ -58,6 +66,8 @@ export default async function Home(props: {
           lang={lang} 
           currentPage={currentPage}
           totalPages={totalPages}
+          currentSearch={search}
+          currentTag={tag}
         />
       </section>
     </main>

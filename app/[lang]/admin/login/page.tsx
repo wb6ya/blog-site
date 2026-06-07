@@ -39,6 +39,9 @@ export default function AdminLogin() {
 
       // حفظ التوكن
       localStorage.setItem("adminToken", data.token);
+      localStorage.setItem("adminRole", data.role);
+      if (data.username) localStorage.setItem("adminUsername", data.username);
+      if (data.avatar) localStorage.setItem("adminAvatar", data.avatar);
       
       // التوجيه للوحة التحكم
       router.push(`/${lang}/admin/dashboard`);

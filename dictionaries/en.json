@@ -19,7 +19,12 @@
     "readTime": "min read",
     "author": "Author",
     "share": "Share",
-    "thanks": "Thanks for reading to the end!"
+    "thanks": "Thanks for reading to the end!",
+    "searchPlaceholder": "Search articles...",
+    "allTopics": "All Topics",
+    "popularTags": "Popular Topics",
+    "clearSearch": "Clear search",
+    "noResults": "No articles found matching your search."
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -56,6 +61,17 @@
     "currentCover": "Current Cover",
     "newCover": "New Cover",
     "createSuccess": "Article added successfully! Redirecting...",
-    "editSuccess": "Changes saved successfully! Redirecting..."
+    "editSuccess": "Changes saved successfully! Redirecting...",
+    "cropImage": "Crop Image",
+    "zoom": "Zoom",
+    "cancel": "Cancel",
+    "saveCrop": "Save Cropped Image",
+    "fileTooLarge": "Image must be less than 5MB.",
+    "aiStep1": "Calling AI Assistant...",
+    "aiStep2": "Improving formatting & context...",
+    "aiStep3": "Translating to English...",
+    "aiStep4": "Finalizing & Publishing...",
+    "tags": "Tags (Optional)",
+    "addTag": "Type a tag and press Enter"
   }
 }

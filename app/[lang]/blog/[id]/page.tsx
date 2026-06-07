@@ -56,7 +56,7 @@ export default async function BlogPage(props: {
 
 
       {/* Cinematic Header */}
-      <section className="relative w-full h-[70vh] md:h-[80vh] flex items-center justify-center overflow-hidden">
+      <section className="relative w-full min-h-[60vh] md:min-h-[80vh] flex items-center justify-center py-20 md:py-32 overflow-hidden">
         {/* Full-width Background Image */}
         {imgSrc && (
           <>
@@ -66,6 +66,7 @@ export default async function BlogPage(props: {
               fill
               className="object-cover scale-105"
               priority
+              sizes="100vw"
             />
             {/* Blur & Overlay */}
             <div className="absolute inset-0 bg-background/60 backdrop-blur-xl pointer-events-none"></div>
@@ -77,8 +78,8 @@ export default async function BlogPage(props: {
         )}
 
         {/* Header Content in Glass Box */}
-        <div className="relative z-10 container max-w-4xl mx-auto px-4 mt-32">
-          <div className="flex mb-8">
+        <div className="relative z-10 container max-w-4xl mx-auto px-4 w-full mb-16 md:mb-32">
+          <div className="flex mb-6 md:mb-8">
             <Link href={`/${lang}`} className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide group font-medium bg-surface/50 backdrop-blur-md px-5 py-2.5 rounded-full border border-glass-border shadow-md">
               <svg className={`w-4 h-4 transition-transform mx-2 ${lang === 'en' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -87,22 +88,22 @@ export default async function BlogPage(props: {
             </Link>
           </div>
 
-          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] text-center flex flex-col items-center">
+          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 sm:p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] text-center flex flex-col items-center mx-auto w-full max-w-[95vw]">
             
-            <div className="flex flex-wrap justify-center items-center gap-3 text-brand-light font-mono text-xs tracking-widest uppercase mb-6">
+            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-brand-light font-mono text-[10px] sm:text-xs tracking-widest uppercase mb-4 sm:mb-6">
               <span>{formattedDate}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-brand"></span>
               <span>{readTime} {dict.blogs.readTime}</span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-foreground leading-[1.2] mb-8 drop-shadow-md break-words max-w-full">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-foreground leading-[1.3] md:leading-[1.2] mb-6 md:mb-8 drop-shadow-md break-words max-w-full">
               {title}
             </h1>
 
-            <div className="flex items-center gap-4 pt-6 border-t border-glass-border w-full justify-center">
+            <div className="flex items-center gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-glass-border w-full justify-center">
                {/* Author */}
-               <div className="w-10 h-10 rounded-full bg-black/40 border border-white/10 overflow-hidden relative">
-                 <Image src={blog.author?.avatar || "/images/logo.png"} alt="Author" fill className="object-cover p-1" />
+               <div className="w-10 h-10 rounded-full bg-black/40 border border-white/10 overflow-hidden relative shrink-0">
+                 <Image src={blog.author?.avatar || "/images/logo.png"} alt="Author" fill sizes="40px" className="object-cover p-1" />
                </div>
                <div className="text-start">
                  <p className="text-sm font-bold text-foreground">{blog.author?.username || 'Dego'}</p>
@@ -115,14 +116,15 @@ export default async function BlogPage(props: {
 
       {/* Main Hero Image (Crisp) */}
       {imgSrc && (
-        <section className="container max-w-5xl mx-auto px-4 relative z-20 -mt-20 md:-mt-32 mb-16">
-          <div className="relative w-full h-[40vh] md:h-[60vh] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
+        <section className="container max-w-5xl mx-auto px-4 relative z-20 -mt-20 md:-mt-32 mb-10 md:mb-16">
+          <div className="relative w-full aspect-video md:aspect-[21/9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
             <Image
               src={imgSrc}
               alt={title}
               fill
               className="object-cover"
               priority
+              sizes="(max-width: 1024px) 100vw, 1024px"
             />
           </div>
         </section>
@@ -143,6 +145,17 @@ export default async function BlogPage(props: {
             {content}
           </div>
         </article>
+
+        {/* Article Tags */}
+        {blog.tags && blog.tags.length > 0 && (
+          <div className="mt-12 mb-8 flex flex-wrap gap-2">
+            {blog.tags.map((tag: string, index: number) => (
+              <span key={index} className="px-4 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand-light text-sm font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Footer / Share */}
         <div className="mt-20 pt-10 border-t border-glass-border flex flex-col sm:flex-row items-center justify-between gap-6">

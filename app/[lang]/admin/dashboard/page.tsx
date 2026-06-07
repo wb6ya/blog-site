@@ -10,6 +10,7 @@ import ar from "@/dictionaries/ar.json";
 export default function AdminDashboard() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const params = useParams();
   
@@ -35,10 +36,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
+    const role = localStorage.getItem("adminRole");
     if (!token) {
       router.push(`/${lang}/admin/login`);
       return;
     }
+    if (role === 'admin') setIsAdmin(true);
     fetchBlogs();
   }, [router, lang]);
 
@@ -90,26 +93,31 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#050505] relative overflow-hidden" dir="rtl">
       
       {/* Background Gradients */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-brand/10 blur-[150px] pointer-events-none"></div>
+      <div className="absolute top-0 left-1/4 w-1/2 h-96 bg-brand/20 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
       
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-surface/50 backdrop-blur-xl border-b border-white/10 px-6 py-4">
-        <div className="container mx-auto max-w-7xl flex justify-between items-center">
+      {/* Dashboard Header (Pushed down to avoid global navbar overlap) */}
+      <header className="relative z-10 pt-32 pb-8 px-6 border-b border-white/5">
+        <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-brand/20 border border-brand/40 flex items-center justify-center shadow-[0_0_15px_rgba(var(--brand),0.2)]">
-              <svg className="w-5 h-5 text-brand-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+            <div className="w-12 h-12 rounded-full bg-surface/80 border border-white/10 flex items-center justify-center shadow-lg backdrop-blur-md">
+              <svg className="w-6 h-6 text-brand-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-white tracking-wide">{dict.admin.dashboard}</h1>
+            <div>
+              <h1 className="text-2xl font-extrabold text-white tracking-wide">{dict.admin.dashboard}</h1>
+              <p className="text-sm text-muted-foreground mt-1">{dict.admin.welcomeBack}</p>
+            </div>
           </div>
           
-          <div className="flex items-center gap-4">
-             <Link href={`/${lang}`} className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">{dict.nav.home}</Link>
+          <div className="flex items-center gap-4 bg-surface/30 p-1.5 rounded-full border border-glass-border backdrop-blur-md">
+             <Link href={`/${lang}`} className="text-sm font-medium text-gray-300 hover:text-white transition-colors px-4 py-2 rounded-full hover:bg-white/5">{dict.nav.home}</Link>
+             {isAdmin && (
+               <Link href={`/${lang}/admin/profile`} className="text-sm font-medium text-brand hover:text-brand-light transition-colors px-4 py-2 rounded-full hover:bg-brand/10">{lang === 'ar' ? 'الملف الشخصي' : 'Profile'}</Link>
+             )}
              <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-full transition-colors border border-red-500/20"
+              className="flex items-center gap-2 text-sm font-bold text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 px-5 py-2 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -120,31 +128,33 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 max-w-7xl mt-10 mb-20 relative z-10">
+      <main className="container mx-auto px-4 max-w-7xl mt-8 mb-20 relative z-10">
         
         {/* Header Actions & Stats */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           {/* Stat Card */}
-          <div className="bg-surface/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex items-center gap-6 min-w-[280px]">
-             <div className="w-14 h-14 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <svg className="w-7 h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 flex items-center gap-6 min-w-[280px] shadow-lg">
+             <div className="w-16 h-16 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-brand-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
              </div>
              <div>
-               <p className="text-gray-400 text-sm font-medium mb-1">{dict.admin.totalArticles}</p>
-               <p className="text-3xl font-extrabold text-white">{blogs.length}</p>
+               <p className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wider">{dict.admin.totalArticles}</p>
+               <p className="text-4xl font-extrabold text-white drop-shadow-md">{blogs.length}</p>
              </div>
           </div>
 
           <Link
             href={`/${lang}/admin/create`}
-            className="group flex items-center gap-2 bg-brand hover:bg-brand-light text-white px-6 py-3.5 rounded-2xl transition-all duration-300 font-bold shadow-[0_0_20px_rgba(var(--brand),0.3)] hover:shadow-[0_0_30px_rgba(var(--brand),0.5)]"
+            className="group flex items-center gap-3 bg-brand hover:bg-brand-light text-white px-8 py-4 rounded-full transition-all duration-300 font-bold shadow-[0_0_20px_rgba(var(--brand),0.4)] hover:shadow-[0_0_40px_rgba(var(--brand),0.6)] hover:-translate-y-1"
           >
-            <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {dict.admin.newPost}
+            <span className="text-base">{dict.admin.newPost}</span>
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+              <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
           </Link>
         </div>
 
@@ -195,10 +205,10 @@ export default function AdminDashboard() {
                         {new Date(blog.createdAt).toLocaleDateString(lang === 'ar' ? "ar-SA" : "en-US", { year: "numeric", month: "short", day: "numeric" })}
                       </td>
                       <td className="p-5">
-                        <div className="flex justify-center gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
+                        <div className="flex justify-center gap-2">
                           <Link
                             href={`/${lang}/admin/edit/${blog._id}`}
-                            className="p-2 rounded-lg hover:bg-blue-500/10 text-gray-400 hover:text-blue-400 transition-colors tooltip-wrapper"
+                            className="p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500 border border-blue-500/20 hover:border-blue-500 text-blue-400 hover:text-white transition-all duration-300 tooltip-wrapper"
                             title={dict.admin.edit}
                           >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -207,7 +217,7 @@ export default function AdminDashboard() {
                           </Link>
                           <button
                             onClick={() => handleDelete(blog._id)}
-                            className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors tooltip-wrapper"
+                            className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white transition-all duration-300 tooltip-wrapper"
                             title={dict.admin.delete}
                           >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
