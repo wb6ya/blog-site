@@ -4,8 +4,16 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Cropper from "react-easy-crop";
+import dynamic from "next/dynamic";
 import en from "@/dictionaries/en.json";
 import ar from "@/dictionaries/ar.json";
+
+const RichTextEditor = dynamic(() => import("@/app/components/RichTextEditor"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[300px] rounded-xl bg-gray-900/50 border border-gray-700 animate-pulse" />
+  ),
+});
 
 // Helper to get cropped image file
 const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<File> => {
@@ -177,7 +185,8 @@ export default function CreateBlog() {
       setLoading(false);
       return;
     }
-    if (content.trim().length < 50) {
+    const plainContent = content.replace(/<[^>]*>/g, '').trim();
+    if (plainContent.length < 50) {
       setError(lang === 'ar' ? "يجب أن يتكون المحتوى من 50 حرفاً على الأقل." : "Content must be at least 50 characters.");
       setLoading(false);
       return;
@@ -287,15 +296,12 @@ export default function CreateBlog() {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               {dict.admin.content}
             </label>
-            <textarea
-              required
+            <RichTextEditor
+              content={content}
+              onChange={setContent}
               disabled={loading || success}
-              rows={12}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-brand transition-colors resize-none disabled:opacity-50"
+              lang={lang as string}
               placeholder={lang === 'ar' ? "اكتب محتوى المقال كاملاً هنا..." : "Write the full article content here..."}
-              minLength={50}
             />
           </div>
 

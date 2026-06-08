@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const fetchBlogs = async (page = 1) => {
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5500/api";
       const res = await fetch(`${apiUrl}/blog?page=${page}&limit=10`);
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -72,7 +72,7 @@ export default function AdminDashboard() {
 
     try {
       const token = localStorage.getItem("adminToken");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5500/api";
       const res = await fetch(`${apiUrl}/blog/${id}`, {
         method: "DELETE",
         headers: {

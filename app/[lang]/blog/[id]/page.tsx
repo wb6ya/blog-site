@@ -154,17 +154,17 @@ export default async function BlogPage(props: {
       {/* Article Content */}
       <section className={`container ${imgSrc ? 'mt-8' : 'mt-16'} max-w-2xl mx-auto px-6 relative z-10`}>
         <article className="prose-container max-w-none">
-          <div className="text-lg text-foreground/80 leading-relaxed font-light whitespace-pre-wrap 
+          <div className="rich-content text-lg text-foreground/80 leading-relaxed font-light
             [&>p]:mb-8 [&>p:first-child]:text-xl [&>p:first-child]:leading-loose [&>p:first-child]:font-normal [&>p:first-child]:text-foreground
             [&>h2]:text-3xl [&>h2]:font-bold [&>h2]:text-foreground [&>h2]:mt-16 [&>h2]:mb-6 
             [&>h3]:text-2xl [&>h3]:font-bold [&>h3]:text-foreground/90 [&>h3]:mt-10 [&>h3]:mb-4
             [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-8 [&>ul>li]:mb-3 [&>ul>li]:pl-2
             [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-8 [&>ol>li]:mb-3 [&>ol>li]:pl-2
             [&>blockquote]:border-s-4 [&>blockquote]:border-brand [&>blockquote]:px-6 [&>blockquote]:py-4 [&>blockquote]:my-10 [&>blockquote]:bg-brand/5 [&>blockquote]:text-xl [&>blockquote]:font-medium [&>blockquote]:italic [&>blockquote]:rounded-e-xl [&>blockquote]:shadow-sm
-            [&>a]:text-brand [&>a]:underline [&>a]:underline-offset-4 hover:[&>a]:text-brand-light transition-colors
-          ">
-            {content}
-          </div>
+            [&>hr]:border-white/10 [&>hr]:my-12
+          "
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
         </article>
 
         {/* Article Tags */}
