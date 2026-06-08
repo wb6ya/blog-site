@@ -12,12 +12,23 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const getImageSrc = (src) => {
+const getImageSrc = (src?: string) => {
   if (!src) return null;
   return src.startsWith('http') || src.startsWith('/') ? src : `/${src}`;
 };
 
-function BlogCard({ blog, dict, lang, featured = false, isBento = false, bentoIndex = 0 }) {
+import { Blog } from "@/services/api";
+
+interface BlogCardProps {
+  blog: Blog;
+  dict: any;
+  lang: string;
+  featured?: boolean;
+  isBento?: boolean;
+  bentoIndex?: number;
+}
+
+function BlogCard({ blog, dict, lang, featured = false, isBento = false, bentoIndex = 0 }: BlogCardProps) {
   const title = lang === 'en' && blog.titleEn ? blog.titleEn : blog.title;
   const description = lang === 'en' && blog.descriptionEn ? blog.descriptionEn : blog.description;
   const dateStr = new Date(blog.createdAt).toLocaleDateString(lang === 'ar' ? "ar-SA" : "en-US", {
@@ -94,7 +105,14 @@ function BlogCard({ blog, dict, lang, featured = false, isBento = false, bentoIn
   );
 }
 
-function IntegratedHero({ heroBlog, heroDict, dict, lang }) {
+interface IntegratedHeroProps {
+  heroBlog: Blog | null;
+  heroDict: any;
+  dict: any;
+  lang: string;
+}
+
+function IntegratedHero({ heroBlog, heroDict, dict, lang }: IntegratedHeroProps) {
   if (!heroDict) return null;
   
   if (!heroBlog) {
@@ -139,12 +157,23 @@ function IntegratedHero({ heroBlog, heroDict, dict, lang }) {
   );
 }
 
-function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSearch = "", currentTag = "" }) {
+interface BlogsProps {
+  blogs: Blog[];
+  dict: any;
+  heroDict: any;
+  lang: string;
+  currentPage: number;
+  totalPages: number;
+  currentSearch?: string;
+  currentTag?: string;
+}
+
+function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSearch = "", currentTag = "" }: BlogsProps) {
   const container = useRef(null);
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(currentSearch);
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
     if (searchInput.trim()) params.set('search', searchInput.trim());
@@ -152,7 +181,7 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSe
     router.push(`/${lang}?${params.toString()}`);
   };
 
-  const handleTagClick = (tag) => {
+  const handleTagClick = (tag: string) => {
     const params = new URLSearchParams();
     if (currentSearch) params.set('search', currentSearch);
     if (tag) params.set('tag', tag);
@@ -164,9 +193,9 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSe
     router.push(`/${lang}`);
   };
 
-  const buildPageUrl = (page) => {
+  const buildPageUrl = (page: number) => {
     const params = new URLSearchParams();
-    params.set('page', page);
+    params.set('page', page.toString());
     if (currentSearch) params.set('search', currentSearch);
     if (currentTag) params.set('tag', currentTag);
     return `/${lang}?${params.toString()}`;

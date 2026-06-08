@@ -7,7 +7,12 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { usePathname } from "next/navigation";
 
-const Navbar = ({ lang, dict }) => {
+interface NavbarProps {
+  lang: string;
+  dict: any;
+}
+
+const Navbar = ({ lang, dict }: NavbarProps) => {
   const navRef = useRef(null);
   const pathname = usePathname();
 

@@ -4,7 +4,12 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
-export default function Hero({ dict, lang }) {
+interface HeroProps {
+  dict: any;
+  lang: string;
+}
+
+export default function Hero({ dict, lang }: HeroProps) {
   const container = useRef(null);
 
   useGSAP(() => {

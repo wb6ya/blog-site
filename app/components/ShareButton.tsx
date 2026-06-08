@@ -1,6 +1,11 @@
 "use client";
 
-export default function ShareButton({ lang, title }) {
+interface ShareButtonProps {
+  lang: string;
+  title: string;
+}
+
+export default function ShareButton({ lang, title }: ShareButtonProps) {
   const handleShare = async () => {
     if (navigator.share) {
       try {

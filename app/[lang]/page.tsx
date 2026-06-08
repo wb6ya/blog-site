@@ -9,46 +9,7 @@ export async function generateMetadata(props: { params: Promise<{ lang: string }
   };
 }
 
-async function getBlogs(page: number, search: string, tag: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  try {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('limit', '10');
-    if (search) params.append('search', search);
-    if (tag) params.append('tag', tag);
-
-    const res = await fetch(`${apiUrl}/blog?${params.toString()}`, { cache: "no-store" });
-    if (!res.ok) {
-      throw new Error("Failed to fetch blogs");
-    }
-    const data = await res.json();
-    
-    // Support both old flat array API and new paginated object API
-    const isFlatArray = Array.isArray(data);
-    
-    let blogsList = isFlatArray ? data : (Array.isArray(data.blogs) ? data.blogs : []);
-    let currentTotalPages = 1;
-    
-    if (isFlatArray) {
-      // Manual pagination fallback if API returns all items
-      currentTotalPages = Math.ceil(blogsList.length / 10) || 1;
-      const startIndex = (page - 1) * 10;
-      blogsList = blogsList.slice(startIndex, startIndex + 10);
-    } else {
-      currentTotalPages = data.totalPages || 1;
-    }
-
-    return {
-      blogs: blogsList,
-      currentPage: isFlatArray ? page : (data.currentPage || 1),
-      totalPages: currentTotalPages,
-    };
-  } catch (error) {
-    console.error("Error fetching blogs:", error);
-    return { blogs: [], currentPage: 1, totalPages: 1 };
-  }
-}
+import { getBlogs } from "@/services/api";
 
 export default async function Home(props: {
   params: Promise<{ lang: string }>;
