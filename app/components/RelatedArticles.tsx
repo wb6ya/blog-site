@@ -5,7 +5,7 @@ import { getDictionary } from "@/dictionaries";
 async function getRelatedBlogs(id: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
-    const res = await fetch(`${apiUrl}/blog/${id}/related`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/blog/${id}/related`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const json = await res.json();
     return json.data || [];

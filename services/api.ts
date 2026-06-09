@@ -89,7 +89,7 @@ export async function getSitemapBlogs(): Promise<{ _id: string; updatedAt?: stri
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return [];
   try {
-    const res = await fetch(`${apiUrl}/blog/sitemap`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/blog/sitemap`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

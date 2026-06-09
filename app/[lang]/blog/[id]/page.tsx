@@ -34,7 +34,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string; la
 async function getBlog(id: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
-    const res = await fetch(`${apiUrl}/blog/${id}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/blog/${id}`, { next: { revalidate: 60 } });
     if (!res.ok) {
       if (res.status === 404) return null;
       throw new Error("Failed to fetch blog");
