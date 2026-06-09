@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSubscribers, deleteSubscriber } from "@/services/api";
-import AdminNavbar from "@/app/components/AdminNavbar";
 
 export default function SubscribersPage({ params }: { params: Promise<{ lang: string }> }) {
   const [subscribers, setSubscribers] = useState<any[]>([]);
@@ -60,8 +59,6 @@ export default function SubscribersPage({ params }: { params: Promise<{ lang: st
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-foreground font-sans relative overflow-hidden" dir={lang === 'en' ? 'ltr' : 'rtl'}>
-      <AdminNavbar lang={lang} />
-      
       <main className="max-w-5xl mx-auto px-6 py-24 relative z-10">
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-4">
