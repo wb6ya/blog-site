@@ -24,7 +24,8 @@
     "allTopics": "كل المواضيع",
     "popularTags": "مواضيع شائعة",
     "clearSearch": "مسح البحث",
-    "noResults": "لم يتم العثور على مقالات تطابق بحثك."
+    "noResults": "لم يتم العثور على مقالات تطابق بحثك.",
+    "relatedArticles": "مقالات ذات صلة"
   },
   "admin": {
     "dashboard": "لوحة القيادة",

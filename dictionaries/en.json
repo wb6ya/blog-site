@@ -23,8 +23,9 @@
     "searchPlaceholder": "Search articles...",
     "allTopics": "All Topics",
     "popularTags": "Popular Topics",
-    "clearSearch": "Clear search",
-    "noResults": "No articles found matching your search."
+    "clearSearch": "Clear Search",
+    "noResults": "No articles matched your search.",
+    "relatedArticles": "Related Articles"
   },
   "admin": {
     "dashboard": "Dashboard",

@@ -64,6 +64,7 @@ export default function EditBlog() {
   const [image, setImage] = useState<File | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [enhanceWithAI, setEnhanceWithAI] = useState(false);
   
   // Tags State
   const [tags, setTags] = useState<string[]>([]);
@@ -226,6 +227,7 @@ export default function EditBlog() {
       formData.append("description", description);
       formData.append("content", content);
       formData.append("tags", JSON.stringify(tags));
+      formData.append("enhanceWithAI", enhanceWithAI ? "true" : "false");
       if (image) {
         formData.append("image", image);
       }
@@ -392,6 +394,23 @@ export default function EditBlog() {
               </div>
             )}
             <p className="text-xs text-gray-500 mt-2">{dict.admin.coverOptional}</p>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-brand/10 border border-brand/20">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={enhanceWithAI}
+                onChange={(e) => setEnhanceWithAI(e.target.checked)}
+                disabled={loading || success}
+              />
+              <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+            </label>
+            <div>
+              <p className="text-sm font-medium text-white">{lang === 'ar' ? 'تحسين الصياغة بالذكاء الاصطناعي (عند التعديل)' : 'Enhance writing with AI (on edit)'}</p>
+              <p className="text-xs text-brand-light/80">{lang === 'ar' ? 'قم بتفعيله إذا كنت تريد للذكاء الاصطناعي إعادة صياغة تعديلاتك.' : 'Enable if you want AI to rephrase your edits.'}</p>
+            </div>
           </div>
 
           {/* Sequential Loader Modal */}

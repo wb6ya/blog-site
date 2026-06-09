@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 import { getDictionary } from "@/dictionaries";
 import ShareButton from "@/app/components/ShareButton";
+import RelatedArticles from "@/app/components/RelatedArticles";
 
 export async function generateMetadata(props: { params: Promise<{ id: string; lang: string }> }): Promise<Metadata> {
   const { id, lang } = await props.params;
@@ -188,6 +189,10 @@ export default async function BlogPage(props: {
             <ShareButton lang={lang} title={title} />
           </div>
         </div>
+        
+        {/* Related Articles */}
+        <RelatedArticles id={id} lang={lang} />
+        
       </section>
     </main>
   );
