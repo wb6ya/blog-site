@@ -6,6 +6,8 @@ export interface Blog {
   descriptionEn?: string;
   image?: string;
   tags?: string[];
+  views?: number;
+  likes?: number;
   createdAt: string;
   // add other fields as necessary
 }
@@ -80,5 +82,31 @@ export async function getSystemTags(): Promise<string[]> {
   } catch (error) {
     console.error("Error fetching tags:", error);
     return [];
+  }
+}
+
+export async function recordView(id: string): Promise<boolean> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return false;
+  try {
+    const res = await fetch(`${apiUrl}/blog/${id}/view`, { method: "POST" });
+    return res.ok;
+  } catch (e) {
+    console.error("Failed to record view", e);
+    return false;
+  }
+}
+
+export async function recordLike(id: string): Promise<{ success: boolean; likes?: number }> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return { success: false };
+  try {
+    const res = await fetch(`${apiUrl}/blog/${id}/like`, { method: "POST" });
+    if (!res.ok) return { success: false };
+    const data = await res.json();
+    return { success: true, likes: data.likes };
+  } catch (e) {
+    console.error("Failed to record like", e);
+    return { success: false };
   }
 }
