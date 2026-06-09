@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import { getDictionary } from "@/dictionaries";
 import ShareButton from "@/app/components/ShareButton";
 import RelatedArticles from "@/app/components/RelatedArticles";
+import TableOfContents, { Heading } from "@/app/components/TableOfContents";
 
 export async function generateMetadata(props: { params: Promise<{ id: string; lang: string }> }): Promise<Metadata> {
   const { id, lang } = await props.params;
@@ -64,6 +65,34 @@ function formatContent(htmlStr: string) {
     .join('');
 }
 
+function processContentWithTOC(htmlStr: string): { html: string, headings: Heading[] } {
+  const headings: Heading[] = [];
+  let counter = 0;
+  
+  const htmlWithIds = htmlStr.replace(/<(h[23])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {
+    const level = tag.toLowerCase() === 'h2' ? 2 : 3;
+    const plainText = text.replace(/<[^>]+>/g, '').trim();
+    if (!plainText) return match; // skip empty headers
+    
+    // Check if the tag already has an id attribute
+    if (/id=/i.test(attrs)) {
+       // if it does, we could try to extract it, but it's simpler to just not inject a new one. 
+       // However, we still want it in the TOC.
+       const matchId = attrs.match(/id=["']([^"']+)["']/i);
+       if (matchId && matchId[1]) {
+           headings.push({ id: matchId[1], text: plainText, level });
+           return match;
+       }
+    }
+
+    const id = `section-${counter++}`;
+    headings.push({ id, text: plainText, level });
+    return `<${tag} id="${id}"${attrs} class="scroll-mt-32 ${attrs.replace(/class=["']([^"']*)["']/, '$1')}">${text}</${tag}>`;
+  });
+  
+  return { html: htmlWithIds, headings };
+}
+
 export default async function BlogPage(props: {
   params: Promise<{ id: string; lang: string }>;
 }) {
@@ -78,8 +107,11 @@ export default async function BlogPage(props: {
   const title = lang === 'en' && blog.titleEn ? blog.titleEn : blog.title;
   let content = lang === 'en' && blog.contentEn ? blog.contentEn : blog.content;
   content = formatContent(content);
+  
+  const { html: finalContent, headings } = processContentWithTOC(content);
+  
   const imgSrc = blog.image ? (blog.image.startsWith('http') || blog.image.startsWith('/') ? blog.image : `/${blog.image}`) : null;
-  const readTime = calculateReadTime(content);
+  const readTime = calculateReadTime(finalContent);
   
   const formattedDate = new Date(blog.createdAt).toLocaleDateString(lang === 'ar' ? "ar-SA" : "en-US", {
     year: "numeric",
@@ -166,9 +198,14 @@ export default async function BlogPage(props: {
         </section>
       )}
 
-      {/* Article Content */}
-      <section className={`container ${imgSrc ? 'mt-8' : 'mt-16'} max-w-2xl mx-auto px-6 relative z-10`}>
-        <article className="prose-container max-w-none">
+      {/* Article Content with Sidebar */}
+      <section className={`container ${imgSrc ? 'mt-8' : 'mt-16'} max-w-6xl mx-auto px-4 md:px-6 relative z-10`}>
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
+          
+          {/* Main Article */}
+          <div className="w-full lg:w-[65%] xl:w-[70%]">
+            
+            <article className="prose-container max-w-none">
           <div className="rich-content whitespace-pre-wrap text-lg text-foreground/80 leading-relaxed font-light
             [&>p]:mb-8 [&>p:first-child]:text-xl [&>p:first-child]:leading-loose [&>p:first-child]:font-normal [&>p:first-child]:text-foreground
             [&>h2]:text-3xl [&>h2]:font-bold [&>h2]:text-foreground [&>h2]:mt-16 [&>h2]:mb-6 
@@ -178,7 +215,7 @@ export default async function BlogPage(props: {
             [&>blockquote]:border-s-4 [&>blockquote]:border-brand [&>blockquote]:px-6 [&>blockquote]:py-4 [&>blockquote]:my-10 [&>blockquote]:bg-brand/5 [&>blockquote]:text-xl [&>blockquote]:font-medium [&>blockquote]:italic [&>blockquote]:rounded-e-xl [&>blockquote]:shadow-sm
             [&>hr]:border-white/10 [&>hr]:my-12
           "
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: finalContent }}
           />
         </article>
 
@@ -204,9 +241,17 @@ export default async function BlogPage(props: {
           </div>
         </div>
         
-        {/* Related Articles */}
-        <RelatedArticles id={id} lang={lang} />
-        
+          {/* Related Articles */}
+          <RelatedArticles id={id} lang={lang} />
+
+          </div> {/* End Main Article */}
+
+          {/* Desktop TOC Sidebar */}
+          <aside className="hidden lg:block lg:w-[35%] xl:w-[30%] sticky top-32">
+            <TableOfContents headings={headings} dict={dict} lang={lang} />
+          </aside>
+
+        </div>
       </section>
     </main>
   );

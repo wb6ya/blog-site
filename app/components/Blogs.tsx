@@ -166,9 +166,10 @@ interface BlogsProps {
   totalPages: number;
   currentSearch?: string;
   currentTag?: string;
+  systemTags?: string[];
 }
 
-function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSearch = "", currentTag = "" }: BlogsProps) {
+function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSearch = "", currentTag = "", systemTags = [] }: BlogsProps) {
   const container = useRef(null);
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(currentSearch);
@@ -201,9 +202,7 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSe
     return `/${lang}?${params.toString()}`;
   };
 
-  const popularTags = lang === 'ar' 
-    ? ['تكنولوجيا', 'برمجة', 'تصميم', 'الذكاء الاصطناعي', 'تطوير الويب']
-    : ['Tech', 'Programming', 'Design', 'AI', 'Web Development'];
+  const tagsToDisplay = systemTags && systemTags.length > 0 ? systemTags : [];
 
   useGSAP(() => {
     if (!blogs || blogs.length === 0) return;
@@ -252,22 +251,26 @@ function Blogs({ blogs, dict, heroDict, lang, currentPage, totalPages, currentSe
         </form>
 
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground mx-2">{dict?.popularTags || "Popular Topics"}:</span>
-          <button
-            onClick={() => handleTagClick("")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${!currentTag ? 'bg-brand text-white shadow-[0_0_15px_rgba(var(--brand),0.3)]' : 'bg-surface border border-glass-border text-muted-foreground hover:text-foreground hover:border-brand/30'}`}
-          >
-            {dict?.allTopics || "All Topics"}
-          </button>
-          {popularTags.map(tag => (
-            <button
-              key={tag}
-              onClick={() => handleTagClick(tag)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${currentTag === tag ? 'bg-brand text-white shadow-[0_0_15px_rgba(var(--brand),0.3)]' : 'bg-surface border border-glass-border text-muted-foreground hover:text-foreground hover:border-brand/30'}`}
-            >
-              {tag}
-            </button>
-          ))}
+          {tagsToDisplay.length > 0 && (
+            <>
+              <span className="text-sm font-medium text-muted-foreground mx-2">{dict?.popularTags || "Topics"}:</span>
+              <button
+                onClick={() => handleTagClick("")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${!currentTag ? 'bg-brand text-white shadow-[0_0_15px_rgba(var(--brand),0.3)]' : 'bg-surface border border-glass-border text-muted-foreground hover:text-foreground hover:border-brand/30'}`}
+              >
+                {dict?.allTopics || "All Topics"}
+              </button>
+              {tagsToDisplay.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${currentTag === tag ? 'bg-brand text-white shadow-[0_0_15px_rgba(var(--brand),0.3)]' : 'bg-surface border border-glass-border text-muted-foreground hover:text-foreground hover:border-brand/30'}`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </>
+          )}
           {hasFilters && (
             <button onClick={clearFilters} className="px-4 py-1.5 rounded-full text-sm font-medium text-red-400 hover:bg-red-400/10 transition-colors mx-2">
               {dict?.clearSearch || "Clear filters"}

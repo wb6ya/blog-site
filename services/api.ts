@@ -65,3 +65,20 @@ export async function getBlogs(page: number, search: string, tag: string): Promi
     return { blogs: [], currentPage: 1, totalPages: 1 };
   }
 }
+
+export async function getSystemTags(): Promise<string[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return [];
+  try {
+    const res = await fetch(`${apiUrl}/tags`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      return data.map(tag => typeof tag === 'string' ? tag : tag.name);
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    return [];
+  }
+}

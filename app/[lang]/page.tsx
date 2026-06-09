@@ -9,7 +9,7 @@ export async function generateMetadata(props: { params: Promise<{ lang: string }
   };
 }
 
-import { getBlogs } from "@/services/api";
+import { getBlogs, getSystemTags } from "@/services/api";
 
 export default async function Home(props: {
   params: Promise<{ lang: string }>;
@@ -23,7 +23,12 @@ export default async function Home(props: {
   const { lang } = await props.params;
   const dict = await getDictionary(lang as "ar" | "en");
   
-  const { blogs, currentPage, totalPages } = await getBlogs(page, search, tag);
+  const [blogsData, systemTags] = await Promise.all([
+    getBlogs(page, search, tag),
+    getSystemTags()
+  ]);
+  
+  const { blogs, currentPage, totalPages } = blogsData;
   
   return (
     <main className="min-h-screen pt-24 pb-24">
@@ -37,6 +42,7 @@ export default async function Home(props: {
           totalPages={totalPages}
           currentSearch={search}
           currentTag={tag}
+          systemTags={systemTags}
         />
       </section>
     </main>
