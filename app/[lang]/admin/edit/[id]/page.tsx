@@ -333,7 +333,7 @@ export default function EditBlog() {
             </label>
             
             <div className="flex flex-wrap gap-2 mb-4">
-              {systemTags.map((tagObj) => {
+              {Array.isArray(systemTags) && systemTags.map((tagObj) => {
                 const preTag = tagObj.name;
                 const isSelected = tags.includes(preTag);
                 return (
@@ -347,7 +347,7 @@ export default function EditBlog() {
                   </button>
                 )
               })}
-              {systemTags.length === 0 && (
+              {(!Array.isArray(systemTags) || systemTags.length === 0) && (
                 <p className="text-xs text-muted-foreground">{lang === 'ar' ? 'لا توجد أوسمة متاحة، الرجاء إضافة أوسمة من صفحة Profile.' : 'No tags available. Please add them from the Profile page.'}</p>
               )}
             </div>
