@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Blogs from "../components/Blogs";
+import Newsletter from "../components/Newsletter";
 import { getDictionary } from "@/dictionaries";
 
 export async function generateMetadata(props: { params: Promise<{ lang: string }> }): Promise<Metadata> {
@@ -9,7 +10,7 @@ export async function generateMetadata(props: { params: Promise<{ lang: string }
   };
 }
 
-import { getBlogs, getSystemTags } from "@/services/api";
+import { getBlogs, getSystemTags, getPopularBlogs } from "@/services/api";
 
 export default async function Home(props: {
   params: Promise<{ lang: string }>;
@@ -23,9 +24,10 @@ export default async function Home(props: {
   const { lang } = await props.params;
   const dict = await getDictionary(lang as "ar" | "en");
   
-  const [blogsData, systemTags] = await Promise.all([
+  const [blogsData, systemTags, popularBlogs] = await Promise.all([
     getBlogs(page, search, tag),
-    getSystemTags()
+    getSystemTags(),
+    getPopularBlogs(3)
   ]);
   
   const { blogs, currentPage, totalPages } = blogsData;
@@ -43,7 +45,11 @@ export default async function Home(props: {
           currentSearch={search}
           currentTag={tag}
           systemTags={systemTags}
+          popularBlogs={popularBlogs}
         />
+      </section>
+      <section className="px-4">
+        <Newsletter lang={lang} />
       </section>
     </main>
   );

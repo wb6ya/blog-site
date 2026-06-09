@@ -7,6 +7,8 @@ import ShareButton from "@/app/components/ShareButton";
 import RelatedArticles from "@/app/components/RelatedArticles";
 import TableOfContents, { Heading } from "@/app/components/TableOfContents";
 import EngagementBar from "@/app/components/EngagementBar";
+import Comments from "@/app/components/Comments";
+import Newsletter from "@/app/components/Newsletter";
 
 export async function generateMetadata(props: { params: Promise<{ id: string; lang: string }> }): Promise<Metadata> {
   const { id, lang } = await props.params;
@@ -254,8 +256,14 @@ export default async function BlogPage(props: {
         <div className="mt-8 mb-12 flex justify-center">
           <EngagementBar id={blog._id} initialViews={blog.views || 0} initialLikes={blog.likes || 0} lang={lang} />
         </div>
+
+        {/* Comments Section */}
+        <Comments blogId={blog._id} lang={lang} />
         
-          {/* Related Articles */}
+        {/* Newsletter Section */}
+        <Newsletter lang={lang} />
+
+        {/* Related Articles */}
           <RelatedArticles id={id} lang={lang} />
 
           </div> {/* End Main Article */}

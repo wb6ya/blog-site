@@ -41,6 +41,29 @@ body {
   overflow-x: hidden;
 }
 
+/* ═══════════════════════════════════════════════════════
+   Global Scrollbar Styling (Glassmorphism & Elegant)
+   ═══════════════════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 70, 229, 0.5); /* Brand color with opacity */
+  border-radius: 10px;
+  border: 2px solid var(--color-background); /* Creates padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 229, 0.8);
+}
+
 /* Premium Grid Pattern with fading edges */
 .bg-grid-pattern {
   background-image: 

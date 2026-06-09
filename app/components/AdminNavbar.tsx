@@ -45,6 +45,13 @@ export default function AdminNavbar() {
         </svg>
         <span className="hidden sm:block">{lang === 'ar' ? 'مقال جديد' : 'New Post'}</span>
       </Link>
+
+      <Link href={`/${lang}/admin/subscribers`} className={`flex items-center gap-2 text-sm font-medium transition-all hover:scale-105 ${pathname.includes('/subscribers') ? 'text-brand drop-shadow-[0_0_8px_rgba(var(--brand),0.8)]' : 'text-gray-400 hover:text-white'}`}>
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <span className="hidden sm:block">{lang === 'ar' ? 'المشتركون' : 'Subscribers'}</span>
+      </Link>
       
       {isAdmin && (
         <Link href={`/${lang}/admin/profile`} className={`flex items-center gap-2 text-sm font-medium transition-all hover:scale-105 ${pathname.includes('/profile') ? 'text-brand drop-shadow-[0_0_8px_rgba(var(--brand),0.8)]' : 'text-gray-400 hover:text-white'}`}>

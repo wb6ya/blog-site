@@ -68,6 +68,150 @@ export async function getBlogs(page: number, search: string, tag: string): Promi
   }
 }
 
+export async function getPopularBlogs(limit: number = 3): Promise<Blog[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return [];
+  
+  try {
+    const res = await fetch(`${apiUrl}/blog?sort=popular&limit=${limit}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : (Array.isArray(data.blogs) ? data.blogs : []);
+  } catch (e) {
+    console.error("Error fetching popular blogs", e);
+    return [];
+  }
+}
+
+export async function getSitemapBlogs(): Promise<{ _id: string; updatedAt: string }[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return [];
+  try {
+    const res = await fetch(`${apiUrl}/blog/sitemap`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Error fetching sitemap blogs", e);
+    return [];
+  }
+}
+
+export async function getBlogStats(token: string): Promise<any> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl || !token) return null;
+  try {
+    const res = await fetch(`${apiUrl}/blog/stats`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data;
+  } catch (e) {
+    console.error("Error fetching stats", e);
+    return null;
+  }
+}
+
+export async function getComments(blogId: string): Promise<any[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return [];
+  try {
+    const res = await fetch(`${apiUrl}/blog/${blogId}/comments`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (e) {
+    console.error("Error fetching comments", e);
+    return [];
+  }
+}
+
+export async function postComment(blogId: string, authorName: string, content: string): Promise<{success: boolean, comment?: any, error?: string}> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return { success: false, error: "API URL not found" };
+  try {
+    const res = await fetch(`${apiUrl}/blog/${blogId}/comment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ authorName, content })
+    });
+    const data = await res.json();
+    if (!res.ok) return { success: false, error: data.message || "Failed to post comment" };
+    return { success: true, comment: data.data };
+  } catch (e) {
+    console.error("Error posting comment", e);
+    return { success: false, error: "Network error" };
+  }
+}
+
+export async function deleteAdminComment(commentId: string, token: string): Promise<boolean> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl || !token) return false;
+  try {
+    const res = await fetch(`${apiUrl}/blog/comment/${commentId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return res.ok;
+  } catch (e) {
+    console.error("Error deleting comment", e);
+    return false;
+  }
+}
+
+export async function subscribeNewsletter(email: string): Promise<{success: boolean, message: string}> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return { success: false, message: "API URL not found" };
+  try {
+    const res = await fetch(`${apiUrl}/subscribers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    return { success: res.ok, message: data.message || "Failed to subscribe" };
+  } catch (e) {
+    console.error("Error subscribing", e);
+    return { success: false, message: "Network error" };
+  }
+}
+
+export async function getSubscribers(token: string): Promise<any[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl || !token) return [];
+  try {
+    const res = await fetch(`${apiUrl}/subscribers`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (e) {
+    console.error("Error fetching subscribers", e);
+    return [];
+  }
+}
+
+export async function deleteSubscriber(id: string, token: string): Promise<boolean> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl || !token) return false;
+  try {
+    const res = await fetch(`${apiUrl}/subscribers/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return res.ok;
+  } catch (e) {
+    console.error("Error deleting subscriber", e);
+    return false;
+  }
+}
+
 export async function getSystemTags(): Promise<string[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return [];

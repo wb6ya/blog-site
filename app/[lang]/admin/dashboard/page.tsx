@@ -7,9 +7,11 @@ import Image from "next/image";
 import en from "@/dictionaries/en.json";
 import ar from "@/dictionaries/ar.json";
 import Modal from "@/app/components/Modal";
+import { getBlogStats } from "@/services/api";
 
 export default function AdminDashboard() {
   const [blogs, setBlogs] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -29,6 +31,7 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5500/api";
+      const token = localStorage.getItem("adminToken");
       const res = await fetch(`${apiUrl}/blog?page=${page}&limit=10`);
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -40,8 +43,13 @@ export default function AdminDashboard() {
         setTotalPages(data.totalPages || 1);
         setCurrentPage(data.currentPage || 1);
       }
+
+      if (token) {
+        const statsData = await getBlogStats(token);
+        if (statsData) setStats(statsData);
+      }
     } catch (error) {
-      console.error("Error fetching blogs:", error);
+      console.error("Error fetching blogs or stats:", error);
     } finally {
       setLoading(false);
     }
@@ -190,20 +198,88 @@ export default function AdminDashboard() {
       <main className="container mx-auto px-4 max-w-7xl mt-8 mb-20 relative z-10">
         
         {/* Header Actions & Stats */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          {/* Stat Card */}
-          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 flex items-center gap-6 min-w-[280px] shadow-lg">
-             <div className="w-16 h-16 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {/* Total Articles Stat */}
+          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 flex items-center gap-6 shadow-lg">
+             <div className="w-16 h-16 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0">
                 <svg className="w-8 h-8 text-brand-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
              </div>
              <div>
-               <p className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wider">{dict.admin.totalArticles}</p>
-               <p className="text-4xl font-extrabold text-white drop-shadow-md">{blogs.length}</p>
+               <p className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wider">{dict.admin.totalArticles || (lang === 'ar' ? 'إجمالي المقالات' : 'Total Articles')}</p>
+               <p className="text-4xl font-extrabold text-white drop-shadow-md">{stats?.totalBlogs || blogs.length}</p>
+             </div>
+          </div>
+
+          {/* Total Views Stat */}
+          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 flex items-center gap-6 shadow-lg">
+             <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+             </div>
+             <div>
+               <p className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wider">{lang === 'ar' ? 'إجمالي المشاهدات' : 'Total Views'}</p>
+               <p className="text-4xl font-extrabold text-white drop-shadow-md">{stats?.totalViews || 0}</p>
+             </div>
+          </div>
+
+          {/* Total Likes Stat */}
+          <div className="bg-surface/30 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 flex items-center gap-6 shadow-lg">
+             <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+                <svg className="w-8 h-8 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+             </div>
+             <div>
+               <p className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wider">{lang === 'ar' ? 'إجمالي الإعجابات' : 'Total Likes'}</p>
+               <p className="text-4xl font-extrabold text-white drop-shadow-md">{stats?.totalLikes || 0}</p>
              </div>
           </div>
         </div>
+
+        {/* Top Performing Articles (Leaderboard) */}
+        {stats && stats.topBlogs && stats.topBlogs.length > 0 && (
+          <div className="bg-surface/30 backdrop-blur-xl border border-white/5 rounded-3xl p-6 sm:p-8 mb-10 shadow-2xl">
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+              <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {lang === 'ar' ? 'أفضل المقالات أداءً' : 'Top Performing Articles'}
+            </h2>
+            <div className="space-y-6">
+              {stats.topBlogs.map((blog: any, index: number) => {
+                const maxViews = stats.topBlogs[0].views || 1;
+                const percentage = Math.max(5, (blog.views / maxViews) * 100);
+                
+                return (
+                  <div key={blog._id} className="flex flex-col gap-2">
+                    <div className="flex justify-between items-end">
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-500 font-mono text-sm w-4">{index + 1}.</span>
+                        <p className="text-gray-200 font-medium truncate max-w-[200px] sm:max-w-sm md:max-w-md lg:max-w-xl">
+                          {lang === 'en' && blog.titleEn ? blog.titleEn : blog.title}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm font-mono text-gray-400">
+                        <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>{blog.views || 0}</span>
+                        <span className="flex items-center gap-1 text-rose-400/80"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>{blog.likes || 0}</span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="bg-linear-to-r from-brand/50 to-brand h-full rounded-full transition-all duration-1000 ease-out" 
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Data Table */}
         <div className="bg-surface/30 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
