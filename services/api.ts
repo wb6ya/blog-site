@@ -85,7 +85,7 @@ export async function getPopularBlogs(limit: number = 3): Promise<Blog[]> {
   }
 }
 
-export async function getSitemapBlogs(): Promise<{ _id: string; updatedAt: string }[]> {
+export async function getSitemapBlogs(): Promise<{ _id: string; updatedAt?: string; createdAt?: string }[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return [];
   try {
