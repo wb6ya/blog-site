@@ -55,6 +55,7 @@ function BlogCard({ blog, dict, lang, featured = false, isBento = false, bentoIn
               src={imgSrc}
               alt={title}
               fill
+              quality={90}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />

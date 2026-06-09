@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSubscribers, deleteSubscriber } from "@/services/api";
+import ConfirmModal from "@/app/components/ConfirmModal";
 
 export default function SubscribersPage({ params }: { params: Promise<{ lang: string }> }) {
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<string>("ar");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [subscriberToDelete, setSubscriberToDelete] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,25 +34,31 @@ export default function SubscribersPage({ params }: { params: Promise<{ lang: st
     setLoading(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(lang === 'ar' ? 'هل أنت متأكد من حذف هذا المشترك؟' : 'Are you sure you want to delete this subscriber?')) return;
+  const triggerDelete = (id: string) => {
+    setSubscriberToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!subscriberToDelete) return;
     
     const token = localStorage.getItem("adminToken");
     if (!token) return;
 
-    const success = await deleteSubscriber(id, token);
+    const success = await deleteSubscriber(subscriberToDelete, token);
     if (success) {
-      setSubscribers(subscribers.filter(s => s._id !== id));
-    } else {
-      alert(lang === 'ar' ? 'فشل الحذف' : 'Failed to delete');
+      setSubscribers(subscribers.filter(s => s._id !== subscriberToDelete));
     }
+    setDeleteModalOpen(false);
+    setSubscriberToDelete(null);
   };
 
   // Helper to copy emails to clipboard
   const copyAllEmails = () => {
     const emails = subscribers.map(s => s.email).join(', ');
     navigator.clipboard.writeText(emails);
-    alert(lang === 'ar' ? 'تم نسخ جميع الإيميلات بنجاح!' : 'All emails copied to clipboard!');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) return (
@@ -73,12 +83,22 @@ export default function SubscribersPage({ params }: { params: Promise<{ lang: st
           {subscribers.length > 0 && (
             <button 
               onClick={copyAllEmails}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
+              className={`flex items-center gap-2 px-4 py-2 border rounded-xl transition-all ${
+                copied 
+                  ? 'bg-green-500/20 border-green-500/50 text-green-400' 
+                  : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              }`}
             >
-              <svg className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-              <span>{lang === 'ar' ? 'نسخ الإيميلات' : 'Copy Emails'}</span>
+              {copied ? (
+                <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+              )}
+              <span>{copied ? (lang === 'ar' ? 'تم النسخ' : 'Copied') : (lang === 'ar' ? 'نسخ الإيميلات' : 'Copy Emails')}</span>
             </button>
           )}
         </div>
@@ -114,7 +134,7 @@ export default function SubscribersPage({ params }: { params: Promise<{ lang: st
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
-                          onClick={() => handleDelete(sub._id)}
+                          onClick={() => triggerDelete(sub._id)}
                           className="p-2 text-red-500/70 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                           title={lang === 'ar' ? 'حذف' : 'Delete'}
                         >
@@ -131,6 +151,15 @@ export default function SubscribersPage({ params }: { params: Promise<{ lang: st
           )}
         </div>
       </main>
+
+      <ConfirmModal 
+        isOpen={deleteModalOpen}
+        title={lang === 'ar' ? 'حذف المشترك' : 'Delete Subscriber'}
+        message={lang === 'ar' ? 'هل أنت متأكد من حذف هذا المشترك بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this subscriber? This cannot be undone.'}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteModalOpen(false)}
+        lang={lang}
+      />
     </div>
   );
 }

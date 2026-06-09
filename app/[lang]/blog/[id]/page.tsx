@@ -203,6 +203,7 @@ export default async function BlogPage(props: {
               fill
               className="object-cover"
               priority
+              quality={90}
               sizes="(max-width: 1024px) 100vw, 1024px"
             />
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import en from "@/dictionaries/en.json";
@@ -9,8 +9,12 @@ import ar from "@/dictionaries/ar.json";
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [globalError, setGlobalError] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const params = useParams();
   
@@ -21,7 +25,35 @@ export default function AdminLogin() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setErrors({});
+    setGlobalError("");
+
+    let hasError = false;
+    const newErrors: {[key: string]: string} = {};
+
+    if (!email.trim()) {
+      newErrors.email = lang === 'ar' ? 'الرجاء إدخال البريد الإلكتروني.' : 'Please enter your email.';
+      hasError = true;
+    }
+    if (!password.trim()) {
+      newErrors.password = lang === 'ar' ? 'الرجاء إدخال كلمة المرور.' : 'Please enter your password.';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
+      setLoading(false);
+      setTimeout(() => {
+        if (newErrors.email) {
+          emailRef.current?.focus();
+          emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (newErrors.password) {
+          passwordRef.current?.focus();
+          passwordRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return;
+    }
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -46,7 +78,7 @@ export default function AdminLogin() {
       // التوجيه للوحة التحكم
       router.push(`/${lang}/admin/dashboard`);
     } catch (err: any) {
-      setError(err.message);
+      setGlobalError(err.message);
     } finally {
       setLoading(false);
     }
@@ -84,12 +116,12 @@ export default function AdminLogin() {
             <p className="text-muted-foreground text-sm">{lang === 'ar' ? 'سجل دخولك للوصول إلى لوحة التحكم' : 'Sign in to access your dashboard'}</p>
           </div>
 
-          {error && (
+          {globalError && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm flex items-center gap-3">
               <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>{error}</span>
+              <span>{globalError}</span>
             </div>
           )}
 
@@ -103,15 +135,21 @@ export default function AdminLogin() {
                   </svg>
                 </div>
                 <input
+                  ref={emailRef}
                   type="email"
-                  required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand/50 transition-all"
+                  onChange={(e) => { setEmail(e.target.value); setErrors({...errors, email: ''}); }}
+                  className={`w-full pl-11 pr-4 py-3.5 rounded-xl bg-black/40 border text-white placeholder-gray-600 focus:outline-none transition-all ${errors.email ? 'border-red-500 focus:ring-1 focus:ring-red-500 focus:border-red-500' : 'border-white/10 focus:ring-2 focus:ring-brand/50 focus:border-brand/50'}`}
                   placeholder="name@example.com"
                   dir="ltr"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1.5 px-1">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -124,15 +162,21 @@ export default function AdminLogin() {
                   </svg>
                 </div>
                 <input
+                  ref={passwordRef}
                   type="password"
-                  required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand/50 transition-all"
+                  onChange={(e) => { setPassword(e.target.value); setErrors({...errors, password: ''}); }}
+                  className={`w-full pl-11 pr-4 py-3.5 rounded-xl bg-black/40 border text-white placeholder-gray-600 focus:outline-none transition-all ${errors.password ? 'border-red-500 focus:ring-1 focus:ring-red-500 focus:border-red-500' : 'border-white/10 focus:ring-2 focus:ring-brand/50 focus:border-brand/50'}`}
                   placeholder="••••••••"
                   dir="ltr"
                 />
               </div>
+              {errors.password && (
+                <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1.5 px-1">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {errors.password}
+                </p>
+              )}
             </div>
 
             <button

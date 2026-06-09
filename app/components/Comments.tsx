@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getComments, postComment, deleteAdminComment } from "@/services/api";
+import ConfirmModal from "@/app/components/ConfirmModal";
 
 interface CommentsProps {
   blogId: string;
@@ -17,6 +18,9 @@ export default function Comments({ blogId, lang }: CommentsProps) {
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminToken, setAdminToken] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     fetchComments();
@@ -39,6 +43,8 @@ export default function Comments({ blogId, lang }: CommentsProps) {
     e.preventDefault();
     if (!content.trim()) {
       setError(lang === 'ar' ? 'الرجاء كتابة تعليق.' : 'Please write a comment.');
+      contentRef.current?.focus();
+      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     
@@ -58,14 +64,21 @@ export default function Comments({ blogId, lang }: CommentsProps) {
     setSubmitting(false);
   };
 
-  const handleDelete = async (commentId: string) => {
-    if (!confirm(lang === 'ar' ? 'هل أنت متأكد من حذف هذا التعليق؟' : 'Are you sure you want to delete this comment?')) return;
-    const success = await deleteAdminComment(commentId, adminToken);
+  const triggerDelete = (commentId: string) => {
+    setCommentToDelete(commentId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!commentToDelete) return;
+    const success = await deleteAdminComment(commentToDelete, adminToken);
     if (success) {
-      setComments(comments.filter(c => c._id !== commentId));
+      setComments(comments.filter(c => c._id !== commentToDelete));
     } else {
-      alert(lang === 'ar' ? 'فشل الحذف' : 'Failed to delete');
+      setError(lang === 'ar' ? 'فشل الحذف' : 'Failed to delete');
     }
+    setDeleteModalOpen(false);
+    setCommentToDelete(null);
   };
 
   return (
@@ -91,15 +104,20 @@ export default function Comments({ blogId, lang }: CommentsProps) {
         </div>
         <div className="mb-4">
           <textarea
+            ref={contentRef}
             placeholder={lang === 'ar' ? 'اكتب تعليقك هنا...' : 'Write your comment here...'}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full bg-surface/50 border border-glass-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-brand/50 transition-colors min-h-[120px] resize-y"
+            onChange={(e) => { setContent(e.target.value); setError(""); }}
+            className={`w-full bg-surface/50 border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none transition-colors min-h-[120px] resize-y ${error ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-glass-border focus:border-brand/50'}`}
             maxLength={1000}
-            required
           />
+          {error && (
+            <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1.5 px-2">
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {error}
+            </p>
+          )}
         </div>
-        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
         <div className="flex justify-end">
           <button
             type="submit"
@@ -136,7 +154,7 @@ export default function Comments({ blogId, lang }: CommentsProps) {
             <div key={comment._id} className="bg-surface/10 border border-white/5 rounded-2xl p-5 hover:bg-surface/20 transition-colors duration-300 relative group">
               {isAdmin && (
                 <button 
-                  onClick={() => handleDelete(comment._id)}
+                  onClick={() => triggerDelete(comment._id)}
                   className="absolute top-4 right-4 rtl:left-4 rtl:right-auto text-red-500/50 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg hover:bg-red-500/10"
                   title="Delete Comment"
                 >
@@ -166,6 +184,15 @@ export default function Comments({ blogId, lang }: CommentsProps) {
           ))
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={deleteModalOpen}
+        title={lang === 'ar' ? 'حذف التعليق' : 'Delete Comment'}
+        message={lang === 'ar' ? 'هل أنت متأكد من حذف هذا التعليق بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this comment? This cannot be undone.'}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteModalOpen(false)}
+        lang={lang}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Cropper from "react-easy-crop";
@@ -78,8 +78,13 @@ export default function CreateBlog() {
 
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [globalError, setGlobalError] = useState("");
   const [success, setSuccess] = useState(false);
+  
+  const titleRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
   
   const router = useRouter();
   const params = useParams();
@@ -101,7 +106,7 @@ export default function CreateBlog() {
     // Fetch system tags
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/tags`)
       .then(res => res.json())
-      .then(data => setSystemTags(data))
+      .then(data => setSystemTags(data.data || data || []))
       .catch(console.error);
   }, [lang, router]);
 
@@ -140,10 +145,10 @@ export default function CreateBlog() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) {
-        setError(dict.admin.fileTooLarge);
+        setGlobalError(dict.admin.fileTooLarge);
         return;
       }
-      setError("");
+      setGlobalError("");
       const reader = new FileReader();
       reader.addEventListener("load", () => setImageSrc(reader.result?.toString() || null));
       reader.readAsDataURL(file);
@@ -165,7 +170,7 @@ export default function CreateBlog() {
       }
     } catch (e) {
       console.error(e);
-      setError("Failed to crop image.");
+      setGlobalError("Failed to crop image.");
     }
   };
 
@@ -176,27 +181,47 @@ export default function CreateBlog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setErrors({});
+    setGlobalError("");
+
+    let hasError = false;
+    const newErrors: {[key: string]: string} = {};
 
     if (title.trim().length < 3) {
-      setError(lang === 'ar' ? "يجب أن يتكون العنوان من 3 أحرف على الأقل." : "Title must be at least 3 characters.");
-      setLoading(false);
-      return;
+      newErrors.title = lang === 'ar' ? "يجب أن يتكون العنوان من 3 أحرف على الأقل." : "Title must be at least 3 characters.";
+      hasError = true;
     }
     if (description.trim().length < 10) {
-      setError(lang === 'ar' ? "يجب أن يتكون الوصف من 10 أحرف على الأقل." : "Description must be at least 10 characters.");
-      setLoading(false);
-      return;
+      newErrors.description = lang === 'ar' ? "يجب أن يتكون الوصف من 10 أحرف على الأقل." : "Description must be at least 10 characters.";
+      hasError = true;
     }
     const plainContent = content.replace(/<[^>]*>/g, '').trim();
     if (plainContent.length < 50) {
-      setError(lang === 'ar' ? "يجب أن يتكون المحتوى من 50 حرفاً على الأقل." : "Content must be at least 50 characters.");
-      setLoading(false);
-      return;
+      newErrors.content = lang === 'ar' ? "يجب أن يتكون المحتوى من 50 حرفاً على الأقل." : "Content must be at least 50 characters.";
+      hasError = true;
     }
     if (!image) {
-      setError(lang === 'ar' ? "الرجاء رفع صورة المقال." : "Please upload an image.");
+      newErrors.image = lang === 'ar' ? "الرجاء رفع صورة المقال." : "Please upload an image.";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       setLoading(false);
+      
+      // Focus first error
+      setTimeout(() => {
+        if (newErrors.title) {
+          titleRef.current?.focus();
+          titleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else if (newErrors.description) {
+          descriptionRef.current?.focus();
+          descriptionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else if (newErrors.image) {
+          imageRef.current?.focus();
+          imageRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
       return;
     }
 
@@ -232,7 +257,7 @@ export default function CreateBlog() {
         router.push(`/${lang}/admin/dashboard`);
       }, 2000);
     } catch (err: any) {
-      setError(err.message);
+      setGlobalError(err.message);
       setLoading(false);
     }
   };
@@ -249,10 +274,10 @@ export default function CreateBlog() {
       </div>
 
       <div className="glass-panel rounded-3xl p-8 shadow-xl">
-        {error && (
+        {globalError && (
           <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
              <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            {error}
+            {globalError}
           </div>
         )}
 
@@ -269,15 +294,20 @@ export default function CreateBlog() {
               {dict.admin.title}
             </label>
             <input
+              ref={titleRef}
               type="text"
-              required
               disabled={loading || success}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-brand transition-colors disabled:opacity-50"
+              onChange={(e) => { setTitle(e.target.value); setErrors({...errors, title: ''}); }}
+              className={`w-full px-4 py-3 rounded-xl bg-gray-900/50 border text-white focus:outline-none transition-colors disabled:opacity-50 ${errors.title ? 'border-red-500 focus:border-red-500' : 'border-gray-700 focus:border-brand'}`}
               placeholder={lang === 'ar' ? "اكتب عنواناً جذاباً..." : "Write a catchy title..."}
-              minLength={3}
             />
+            {errors.title && (
+              <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1.5 px-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {errors.title}
+              </p>
+            )}
           </div>
 
           <div>
@@ -285,15 +315,20 @@ export default function CreateBlog() {
               {dict.admin.description}
             </label>
             <textarea
-              required
+              ref={descriptionRef}
               disabled={loading || success}
               rows={3}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-brand transition-colors resize-none disabled:opacity-50"
+              onChange={(e) => { setDescription(e.target.value); setErrors({...errors, description: ''}); }}
+              className={`w-full px-4 py-3 rounded-xl bg-gray-900/50 border text-white focus:outline-none transition-colors resize-none disabled:opacity-50 ${errors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-700 focus:border-brand'}`}
               placeholder={lang === 'ar' ? "اكتب وصفاً مختصراً..." : "Write a short description..."}
-              minLength={10}
             />
+            {errors.description && (
+              <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1.5 px-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {errors.description}
+              </p>
+            )}
           </div>
 
           <div>
@@ -302,11 +337,17 @@ export default function CreateBlog() {
             </label>
             <RichTextEditor
               content={content}
-              onChange={setContent}
+              onChange={(val) => { setContent(val); setErrors({...errors, content: ''}); }}
               disabled={loading || success}
               lang={lang as string}
               placeholder={lang === 'ar' ? "اكتب محتوى المقال كاملاً هنا..." : "Write the full article content here..."}
             />
+            {errors.content && (
+              <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1.5 px-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {errors.content}
+              </p>
+            )}
           </div>
 
           <div>
@@ -351,13 +392,19 @@ export default function CreateBlog() {
               {dict.admin.image}
             </label>
             <input
+              ref={imageRef}
               type="file"
-              required={!image}
               disabled={loading || success}
               accept="image/*"
-              onChange={onFileChange}
-              className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/20 file:text-brand hover:file:bg-brand/30 transition-colors disabled:opacity-50"
+              onChange={(e) => { onFileChange(e); setErrors({...errors, image: ''}); }}
+              className={`w-full px-4 py-3 rounded-xl bg-gray-900/50 border text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/20 file:text-brand hover:file:bg-brand/30 transition-colors disabled:opacity-50 ${errors.image ? 'border-red-500' : 'border-gray-700'}`}
             />
+            {errors.image && (
+              <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1.5 px-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {errors.image}
+              </p>
+            )}
             {imagePreview && !showCropper && (
               <div className="mt-4 relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 shadow-lg">
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />

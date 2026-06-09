@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { subscribeNewsletter } from "@/services/api";
 
 interface NewsletterProps {
@@ -11,6 +11,7 @@ export default function Newsletter({ lang }: NewsletterProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (localStorage.getItem("subscribedToNewsletter") === "true") {
@@ -21,7 +22,13 @@ export default function Newsletter({ lang }: NewsletterProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email.trim()) {
+      setStatus("error");
+      setMessage(lang === 'ar' ? 'الرجاء إدخال البريد الإلكتروني.' : 'Please enter an email address.');
+      emailRef.current?.focus();
+      emailRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
 
     setStatus("loading");
     setMessage("");
@@ -74,18 +81,24 @@ export default function Newsletter({ lang }: NewsletterProps) {
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div className="relative">
                   <input
+                    ref={emailRef}
                     type="email"
                     placeholder={lang === 'ar' ? 'البريد الإلكتروني...' : 'Email address...'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/50 transition-all shadow-inner"
+                    className={`w-full bg-black/40 border rounded-2xl px-6 py-4 text-white placeholder-gray-500 focus:outline-none transition-all shadow-inner ${status === "error" ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-white/10 focus:border-brand/50 focus:ring-1 focus:ring-brand/50'}`}
                   />
                   <div className="absolute right-4 rtl:left-4 rtl:right-auto top-1/2 -translate-y-1/2 text-gray-500">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
+                  {status === "error" && (
+                    <p className="text-red-400 text-sm mt-2 flex items-center gap-1.5 px-2">
+                      <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      {message}
+                    </p>
+                  )}
                 </div>
                 
                 <button
@@ -101,12 +114,6 @@ export default function Newsletter({ lang }: NewsletterProps) {
                 </button>
               </form>
 
-              {status === "error" && (
-                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                  {message}
-                </div>
-              )}
             </>
           )}
         </div>

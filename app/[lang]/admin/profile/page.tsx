@@ -121,7 +121,7 @@ export default function AdminProfile() {
       const res = await fetch(`${apiUrl}/tags`);
       if (res.ok) {
         const data = await res.json();
-        setTags(data);
+        setTags(data.data || data || []);
       }
     } catch (e) { console.error(e) }
   };
@@ -133,7 +133,7 @@ export default function AdminProfile() {
       });
       if (res.ok) {
         const data = await res.json();
-        setAuthors(data);
+        setAuthors(data.data || data || []);
         setLoading(false);
       }
     } catch (e) { console.error(e) }
