@@ -90,7 +90,9 @@ export default function EditBlog() {
   const lang = params?.lang || 'ar';
   const dict = lang === 'en' ? en : ar;
 
-  const steps = [dict.admin.aiStep1, dict.admin.aiStep2, dict.admin.aiStep3, dict.admin.aiStep4];
+  const steps = enhanceWithAI 
+    ? [dict.admin.aiStep1, dict.admin.aiStep2, dict.admin.aiStep3, dict.admin.aiStep4]
+    : [dict.admin.aiStep1, dict.admin.aiStep3, dict.admin.aiStep4];
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -151,12 +153,12 @@ export default function EditBlog() {
       let currentStep = 0;
       interval = setInterval(() => {
         currentStep++;
-        if (currentStep < 3) {
+        if (currentStep < steps.length - 1) {
           setLoadingStep(currentStep);
         }
       }, 5000);
     } else if (success) {
-      setLoadingStep(4); // All done
+      setLoadingStep(steps.length - 1); // All done
     }
     return () => clearInterval(interval);
   }, [loading, success]);

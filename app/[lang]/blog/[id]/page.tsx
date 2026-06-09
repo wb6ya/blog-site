@@ -43,12 +43,25 @@ async function getBlog(id: string) {
   }
 }
 
-// Calculate Read Time
 function calculateReadTime(content: string) {
   if (!content) return 1;
   const words = content.trim().split(/\s+/).length;
   const wpm = 225; // average adult reading speed
   return Math.ceil(words / wpm);
+}
+
+// Format content fallback: If AI strips HTML, wrap plain text newlines into <p> tags
+function formatContent(htmlStr: string) {
+  if (!htmlStr) return "";
+  if (/<(p|br|h[1-6]|div|ul|li|blockquote)[>\s]/i.test(htmlStr)) {
+    return htmlStr;
+  }
+  return htmlStr
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(line => `<p>${line}</p>`)
+    .join('');
 }
 
 export default async function BlogPage(props: {
@@ -63,7 +76,8 @@ export default async function BlogPage(props: {
   }
 
   const title = lang === 'en' && blog.titleEn ? blog.titleEn : blog.title;
-  const content = lang === 'en' && blog.contentEn ? blog.contentEn : blog.content;
+  let content = lang === 'en' && blog.contentEn ? blog.contentEn : blog.content;
+  content = formatContent(content);
   const imgSrc = blog.image ? (blog.image.startsWith('http') || blog.image.startsWith('/') ? blog.image : `/${blog.image}`) : null;
   const readTime = calculateReadTime(content);
   
@@ -155,7 +169,7 @@ export default async function BlogPage(props: {
       {/* Article Content */}
       <section className={`container ${imgSrc ? 'mt-8' : 'mt-16'} max-w-2xl mx-auto px-6 relative z-10`}>
         <article className="prose-container max-w-none">
-          <div className="rich-content text-lg text-foreground/80 leading-relaxed font-light
+          <div className="rich-content whitespace-pre-wrap text-lg text-foreground/80 leading-relaxed font-light
             [&>p]:mb-8 [&>p:first-child]:text-xl [&>p:first-child]:leading-loose [&>p:first-child]:font-normal [&>p:first-child]:text-foreground
             [&>h2]:text-3xl [&>h2]:font-bold [&>h2]:text-foreground [&>h2]:mt-16 [&>h2]:mb-6 
             [&>h3]:text-2xl [&>h3]:font-bold [&>h3]:text-foreground/90 [&>h3]:mt-10 [&>h3]:mb-4
