@@ -216,6 +216,11 @@ export default async function BlogPage(props: {
           {/* Main Article */}
           <div className="w-full lg:w-[65%] xl:w-[70%]">
             
+            {/* Mobile TOC */}
+            <div className="block lg:hidden mb-8">
+              <TableOfContents headings={headings} dict={dict} lang={lang} />
+            </div>
+
             <article className="prose-container max-w-none">
           <div className="rich-content whitespace-pre-wrap text-lg text-foreground/80 leading-relaxed font-light
             [&>p]:mb-8 [&>p:first-child]:text-xl [&>p:first-child]:leading-loose [&>p:first-child]:font-normal [&>p:first-child]:text-foreground
